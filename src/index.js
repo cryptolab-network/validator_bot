@@ -14,7 +14,7 @@ const bot = new TelegramBot(token, {polling: true});
 
 bot.onText(/\/help/, (msg, match) => {
   const help = `
-    A list of commands to help you get insight of your validator's nominations.
+    This bot helps you to monitor the nomination status of your validator.
     /add - add a new validator
     /list - list added validators
     /remove - remove an existing validator
@@ -55,21 +55,30 @@ bot.onText(/\/remove (.+)/, async (msg, match) => {
   const address = match[1];
 
   // Kusama addresses always start with a capital letter like C, D, F, G, H, J...
-  let resp = '';
-
   if (address.match(/[C-Z].+/)?.index !== 0 && !isValidAddressKusama(address)) {
-    resp = `Invalid Kusama address`;
-  } else {
-    const result = await db.removeValidator(msg.from, address);
-    if (result === false) {
-      resp = `Something went wrong, please try again later`;
-    } else {
-      resp = `Your address ${address} is removed.`;
-    }
+    bot.sendMessage(chatId, `Invalid Kusama address`);
+    return;
+  } 
+  // check if the address exists
+  const allAddress = await db.getValidators(msg.from);
+  if (allAddress === null) {
+    bot.sendMessage(chatId, `No validator found. Use /add to create a new one.`);
+    return;
+  } 
+
+  if (allAddress.indexOf(address) === -1) {
+    bot.sendMessage(chatId, `${address} isn't added yet. Use /add to create a new one.`);
+    return;
   }
 
-  // send back
-  bot.sendMessage(chatId, resp);
+  const result = await db.removeValidator(msg.from, address);
+  if (result === false) {
+    bot.sendMessage(chatId, `Something went wrong, please try again later. Or visit our website https://cryptolab.network/`);
+    return;
+  }
+  
+  resp = `Your address ${address} is removed.`;
+  bot.sendMessage(chatId, `Your address ${address} is removed.`);
 })
 
 bot.onText(/\/list/, async (msg, match) => {
@@ -77,10 +86,25 @@ bot.onText(/\/list/, async (msg, match) => {
   
   let resp = '';
   if (result === null) {
-    resp = 'No validator found. User /add to create a new one.'
+    resp = 'No validator found. Use /add to create a new one.'
   } else {
     resp = result.join("\n");
   }
+  bot.sendMessage(msg.chat.id, resp);
+});
+
+bot.onText(/\/trend/, async (msg, match) => {
+  const result = await db.getValidators(msg.from);
+  let resp = '';
+  if (result === null) {
+    resp = `Please /add validator first. Or visit our website https://cryptolab.network/`;
+  } else {
+    resp = result.map((address) => {
+      return `https://www.cryptolab.network/tools/validatorStatus?stash=${address}`;
+    });
+    resp = resp.join("\n");
+  }
+
   bot.sendMessage(msg.chat.id, resp);
 });
 
@@ -89,7 +113,7 @@ bot.onText(/\/list/, async (msg, match) => {
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;
 
-  // send a message to the chat acknowledging receipt of their message
-  // bot.sendMessage(chatId, 'Received your message');
+  // todo show help
+  
   console.log(msg);
 });

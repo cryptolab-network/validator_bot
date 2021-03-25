@@ -63,6 +63,10 @@ module.exports = class DatabaseHandler {
       $pull: { address: address }
     }).exec();
 
+    if (result.length === 0) {
+      return false;
+    }
+
     return true;
   }
 
@@ -70,7 +74,10 @@ module.exports = class DatabaseHandler {
     const result = await this.KsmBot.find({
       'tg_info.username': tgUserInfo.username
     }).exec();
-    if (result.length === 0) {
+    
+    console.log(`result = ${typeof result}`);
+    console.log(result);
+    if (result.length === 0 || result[0].address.length === 0) {
       return null;
     }
     return result[0].address;
