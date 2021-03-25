@@ -56,6 +56,16 @@ module.exports = class DatabaseHandler {
     return true;
   }
 
+  async removeValidator(tgUserInfo, address) {
+    const result = await this.KsmBot.findOneAndUpdate({
+      'tg_info.username': tgUserInfo.username
+    },{
+      $pull: { address: address }
+    }).exec();
+
+    return true;
+  }
+
   async getValidators(tgUserInfo) {
     const result = await this.KsmBot.find({
       'tg_info.username': tgUserInfo.username
