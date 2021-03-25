@@ -1,6 +1,10 @@
 const TelegramBot = require('node-telegram-bot-api');
 const keys = require('./config/keys');
 const { isValidAddressKusama } = require('./utility');
+const DatabaseHandler = require('./db/DatabaseHandler');
+
+const db = new DatabaseHandler();
+db.connect(keys.MONGO_ACCOUNT, keys.MONGO_PASSWORD, keys.MONGO_URL, keys.MONGO_PORT, keys.MONGO_DBNAME);
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = keys.TG_TOKEN;
@@ -12,6 +16,7 @@ bot.onText(/\/help/, (msg, match) => {
   const help = `
     A list of commands to help you get insight of your validator's nominations.
     /add - add a new validator
+    /list - list added validators
     /remove - remove an existing validator
     /trend - show nomination trend of your validators
     /help - display this message
@@ -21,7 +26,8 @@ bot.onText(/\/help/, (msg, match) => {
 
 // Matches "/add [whatever]"
 // todo check ksm address format
-bot.onText(/\/add (.+)/, (msg, match) => {
+bot.onText(/\/add (.+)/, async (msg, match) => {
+  console.log(msg);
   const chatId = msg.chat.id;
   const address = match[1];
 
@@ -31,11 +37,28 @@ bot.onText(/\/add (.+)/, (msg, match) => {
   if (address.match(/[C-Z].+/).index !== 0 || !isValidAddressKusama(address)) {
     resp = `Invalid Kusama address`;
   } else {
-    resp = `Your address ${address} is added.`;
+    const result = await db.updateAddress(msg.from, address);
+    if (result === false) {
+      resp = `Something went wrong, please try again later`;
+    } else {
+      resp = `Your address ${address} is added.`;
+    }
   }
 
   // send back
   bot.sendMessage(chatId, resp);
+});
+
+bot.onText(/\/list/, async (msg, match) => {
+  const result = await db.getValidators(msg.from);
+  console.log(result);
+  let resp = '';
+  if (result === null) {
+    resp = 'No validator found. User /add to create a new one.'
+  } else {
+    resp = result.join("\n");
+  }
+  bot.sendMessage(msg.chat.id, resp);
 });
 
 // Matches "/echo [whatever]"
