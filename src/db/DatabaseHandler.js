@@ -23,14 +23,32 @@ module.exports = class DatabaseHandler {
 
   __initSchema() {
     this.ksmbotSchema_ = new Schema({
-      address:  [String],
+      validators:  [{
+        address: String,
+        nomination: {
+          count: Number,
+          amount: Number
+        } 
+      }],
       tg_info: {
-        id: String,
-        first_name: String,
-        last_name: String,
-        username: String,
-        language_code: String
+        from: {
+          id: Number,
+          is_bot: Boolean,
+          first_name: String,
+          last_name: String,
+          username: String,
+          language_code: String,
+        },
+        chat: {
+          id: Number,
+          first_name: String,
+          last_name: String,
+          username: String,
+          type: String
+        }
       }
+    }, { 
+      typeKey: '$type' 
     }, { 
       collection: 'ksm_bot',
     }, {
@@ -38,48 +56,99 @@ module.exports = class DatabaseHandler {
     });
   }
 
-  async updateAddress(tgUserInfo, address) {
-    let result = await this.KsmBot.findOneAndUpdate({
-      'tg_info.username': tgUserInfo.username
-    }, {
-      $addToSet: {address: address}
+  async updateAddress(from, chat, address) {
+    const user = await this.KsmBot.findOne({
+      'tg_info.from.id': from.id,
+      'tg_info.chat.id': chat.id
     }).exec();
-    if (result === null) {
-      result = await this.KsmBot.create({
-        address: [address],
-        tg_info: tgUserInfo
+
+    console.log(`find user`);
+    console.log(user);
+
+    if (user === null) {
+      const result = await this.KsmBot.create({
+        validators: [{
+          address: address,
+          nomination: {
+            count: 0,
+            amount: 0
+          }
+        }],
+        tg_info: {
+          from: from,
+          chat: chat
+        }
       });
+      console.log(`create document`);
+      console.log(result);
+    } else {
+      // check if address exists
+      let result = user.validators.find((validator) => validator.address === address);
+      console.log(`find address`);
+      console.log(result);
+      if (result === undefined) {
+        // insert address
+        result = await this.KsmBot.findOneAndUpdate({
+          'tg_info.from.id': from.id,
+          'tg_info.chat.id': chat.id
+        }, {
+          $push: {validators: {
+            address: address,
+            nomination: {
+              count: 0,
+              amount: 0
+            }
+          }}
+        })
+      } else {
+        // todo error message
+      }
     }
+    return true;
+  }
+
+  async removeValidator(from, chat, address) {
+    const result = await this.KsmBot.findOneAndUpdate({
+      'tg_info.from.id': from.id,
+      'tg_info.chat.id': chat.id
+    },{
+      $pull: {'validators': {'address': address}}
+    }).exec();
+
+    console.log(result);
+
     if (result === null) {
       return false;
     }
-    return true;
-  }
-
-  async removeValidator(tgUserInfo, address) {
-    const result = await this.KsmBot.findOneAndUpdate({
-      'tg_info.username': tgUserInfo.username
-    },{
-      $pull: { address: address }
-    }).exec();
-
-    if (result.length === 0) {
-      return false;
-    }
 
     return true;
   }
 
-  async getValidators(tgUserInfo) {
-    const result = await this.KsmBot.find({
-      'tg_info.username': tgUserInfo.username
+  async getValidators(from, chat) {
+    const result = await this.KsmBot.findOne({
+      'tg_info.from.id': from.id,
+      'tg_info.chat.id': chat.id
     }).exec();
     
     console.log(`result = ${typeof result}`);
     console.log(result);
-    if (result.length === 0 || result[0].address.length === 0) {
+    if (result === null) {
       return null;
     }
-    return result[0].address;
+    return result.validators;
+  }
+
+  async getAllClients() {
+    const result = await this.KsmBot.find();
+    return result;
+  }
+
+  async updateNomination(_id, address, count, amount) {
+    const result = await this.KsmBot.updateOne({
+      '_id': _id,
+      'validators.address': address
+    }, {
+      $set: {'validators.$.nomination': {count: count, amount: amount}}
+    });
   }
 }
