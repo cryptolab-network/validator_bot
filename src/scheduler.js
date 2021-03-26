@@ -46,13 +46,16 @@ module.exports = class Scheduler {
 
     let validators;
     const clients = await this.db.getAllClients();
-    console.log(clients);
 
     for (let client of clients) {
       for (let validator of client.validators) {
         const nominator = nominators[validator.address];
         let count = 0;
         let amount = new bn(0);
+        if (nominator === undefined) {
+          await this.db.updateNomination(client._id, validator.address, count, amount.toNumber());
+          continue;
+        }
         for (let n of nominator) {
           count++;
           amount = amount.plus(new bn(n.balance.lockedBalance));
