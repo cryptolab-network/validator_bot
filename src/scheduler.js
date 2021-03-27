@@ -62,7 +62,7 @@ module.exports = class Scheduler {
         }
         console.log(`count: ${count}, amount: ${amount.div(new bn(KUSAMA_DECIMAL)).toNumber()}`);
 
-        if (count !== validator.nomination.count || amount.toNumber() !== validator.nomination.amount) {
+        if (count !== validator.nomination.count) {
           // update db
           await this.db.updateNomination(client._id, validator.address, count, amount.toNumber());
           // send notification
