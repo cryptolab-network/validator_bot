@@ -28,7 +28,8 @@ module.exports = class DatabaseHandler {
         nomination: {
           count: Number,
           amount: Number
-        } 
+        },
+        identity: String
       }],
       tg_info: {
         from: {
@@ -56,7 +57,7 @@ module.exports = class DatabaseHandler {
     });
   }
 
-  async updateAddress(from, chat, address) {
+  async updateAddress(from, chat, address, identity) {
     const user = await this.KsmBot.findOne({
       'tg_info.from.id': from.id,
       'tg_info.chat.id': chat.id
@@ -72,7 +73,8 @@ module.exports = class DatabaseHandler {
           nomination: {
             count: 0,
             amount: 0
-          }
+          },
+          identity: identity
         }],
         tg_info: {
           from: from,
@@ -97,7 +99,8 @@ module.exports = class DatabaseHandler {
             nomination: {
               count: 0,
               amount: 0
-            }
+            },
+            identity: identity
           }}
         })
       } else {

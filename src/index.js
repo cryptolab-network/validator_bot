@@ -50,11 +50,13 @@ const message = require('./message');
       if (address.match(/[C-Z].+/)?.index !== 0 && !isValidAddressKusama(address)) {
         resp = message.MSG_INVALID_ADDR;
       } else {
-        const result = await db.updateAddress(msg.from, msg.chat, address);
+        const res = await chainData.getIdentity(address);
+        const identity = res.identity.display === undefined ? '' : res.identity.display;
+        const result = await db.updateAddress(msg.from, msg.chat, address, identity);
         if (result === false) {
           resp = message.MSG_ERROR_UNKNOWN;
         } else {
-          resp = message.MSG_ADD(address);
+          resp = message.MSG_ADD(address, identity);
         }
       }
 

@@ -45,4 +45,12 @@ module.exports = class ChainData {
     return nominations;
   }
 
+  getIdentity = async (address) => {
+    const api = await this.handler.getApi();
+    const identity = await api.derive.accounts.info(address);
+    console.log('identity');
+    console.log(JSON.stringify(identity, undefined, 1));
+    return identity;
+  }
+
 }

@@ -67,7 +67,7 @@ module.exports = class Scheduler {
           // update db
           await this.db.updateNomination(client._id, validator.address, count, amount.toNumber());
           // send notification
-          const resp = message.MSG_NOMINATION(validator.address, validator.nomination.count, validator.nomination.amount.toFixed(2), count, amount.div(new bn(KUSAMA_DECIMAL)).toNumber().toFixed(2));
+          const resp = message.MSG_NOMINATION(validator, validator.nomination.count, (validator.nomination.amount/KUSAMA_DECIMAL).toFixed(2), count, amount.div(new bn(KUSAMA_DECIMAL)).toNumber().toFixed(2));
           await this.notificator.send(client.tg_info.chat.id, resp);
           console.log(resp);
         }

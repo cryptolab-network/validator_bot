@@ -9,29 +9,29 @@ module.exports = {
   /remove  - :scissors: remove an existing validator
   /trend      - :chart_with_upwards_trend: show nomination trend of your validators
   /help        - :information_desk_person: display this message`),
-  MSG_ADD: (address) => {
-    return emoji.emojify(`:tada: Congragulation! Your address ${address} is added to the watchlist. :memo::100: `)
+  MSG_ADD: (address, identity) => {
+    return emoji.emojify(`:tada: Congragulation! Your address ${address} \n${identity === '' ? '' : '(:white_check_mark: '+identity+' )'} is added to the watchlist. :memo::100: `)
   },
   MSG_LIST: (validators) => {
-    return validators.map((v) => emoji.emojify(`:sparkles: ${v.address}`)).join("\n");
+    return validators.map((v) => emoji.emojify(`:sparkles: ${v.identity === ''? v.address : ':white_check_mark: '+v.identity}`)).join("\n");
   },
   MSG_REMOVE: (address) => {
     return emoji.emojify(`:fire: Success! You've removed ${address} from the watchlist.`);
   },
   MSG_TREND: (validators) => {
     const prefix = 'Visit our website to get detailed information.\n';
-    return prefix + validators.map((v) => emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/validatorStatus?stash=${v.address}&coin=KSM">${v.address}</a>`)).join("\n");
+    return prefix + validators.map((v) => emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/validatorStatus?stash=${v.address}&coin=KSM">${v.identity === ''? v.address : v.identity}</a>`)).join("\n");
   },
-  MSG_NOMINATION: (address, oldCount, oldAmount, newCount, newAmount) => {
+  MSG_NOMINATION: (validator, oldCount, oldAmount, newCount, newAmount) => {
     if (newCount > oldCount){
-      return emoji.emojify(`:tada: Congragulation!! Your validator ${address} 
-      Your nominator count are now: ${newCount}, :arrow_up: ${newCount - oldCount}
-      The total amount are now: ${newAmount} KSM, :chart_with_upwards_trend: ${newAmount - oldAmount} KSM
-      `);
+      return emoji.emojify(`:tada: Congragulation!! Your validator ${validator.identity === ''? validator.address : ':white_check_mark: '+validator.identity} recevied new nomination.
+Nominator count: ${oldCount} :arrow_upper_right: ${newCount}
+Total amount: ${oldAmount} :arrow_upper_right: ${newAmount} KSM
+`);
     } else {
-      return emoji.emojify(`:broken_heart: Your validator ${address} lost nominations.
-      Your nominator count are now: ${newCount}, :arrow_down: ${oldCount - newCount}
-      The total amount are now: ${newAmount} KSM, :chart_with_downwards_trend: ${oldAmount - newAmount} KSM
+      return emoji.emojify(`:broken_heart::broken_heart: Your validator ${validator.identity === ''? validator.address : ':white_check_mark: '+validator.identity} lost nominations.
+Nominator count: ${oldCount} :arrow_lower_right: ${newCount}
+Total amount: ${oldAmount} :arrow_lower_right: ${newAmount} KSM
       `);
     }
   },
