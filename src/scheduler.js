@@ -1,5 +1,6 @@
 const CronJob = require('cron').CronJob;
 const bn = require('bignumber.js');
+const message = require('./message');
 
 const KUSAMA_DECIMAL = 1000000000000;
 
@@ -66,9 +67,9 @@ module.exports = class Scheduler {
           // update db
           await this.db.updateNomination(client._id, validator.address, count, amount.toNumber());
           // send notification
-          const message = `!!! Status changed !!!\n${validator.address}\nnominator count: ${count}\ntotal amount: ${amount.div(new bn(KUSAMA_DECIMAL)).toNumber()}\n`;
-          await this.notificator.send(client.tg_info.chat.id, message);
-          console.log(message);
+          const resp = message.MSG_NOMINATION(validator.address, validator.nomination.count, validator.nomination.amount.toFixed(2), count, amount.div(new bn(KUSAMA_DECIMAL)).toNumber().toFixed(2));
+          await this.notificator.send(client.tg_info.chat.id, resp);
+          console.log(resp);
         }
 
       }

@@ -6,6 +6,7 @@ const ApiHandler = require('./ApiHandler');
 const ChainData = require('./ChainData');
 const Scheduler = require('./scheduler');
 const Notification = require('./notification');
+const message = require('./message');
 
 (async ()=> {
   try {
@@ -33,14 +34,7 @@ const Notification = require('./notification');
     })
 
     bot.onText(/\/help/, (msg, match) => {
-      const help = `
-        This bot helps you to monitor the nomination status of your validator.
-        /add - add a new validator
-        /list - list added validators
-        /remove - remove an existing validator
-        /trend - show nomination trend of your validators
-        /help - display this message
-      `;
+      const help = message.MSG_HELP;
       bot.sendMessage(msg.chat.id, help);
     })
 
@@ -54,13 +48,13 @@ const Notification = require('./notification');
       let resp = '';
 
       if (address.match(/[C-Z].+/)?.index !== 0 && !isValidAddressKusama(address)) {
-        resp = `Invalid Kusama address`;
+        resp = message.MSG_INVALID_ADDR;
       } else {
         const result = await db.updateAddress(msg.from, msg.chat, address);
         if (result === false) {
-          resp = `Something went wrong, please try again later`;
+          resp = message.MSG_ERROR_UNKNOWN;
         } else {
-          resp = `Your address ${address} is added.`;
+          resp = message.MSG_ADD(address);
         }
       }
 
@@ -74,39 +68,38 @@ const Notification = require('./notification');
 
       // Kusama addresses always start with a capital letter like C, D, F, G, H, J...
       if (address.match(/[C-Z].+/)?.index !== 0 && !isValidAddressKusama(address)) {
-        bot.sendMessage(chatId, `Invalid Kusama address`);
+        bot.sendMessage(chatId, message.MSG_INVALID_ADDR);
         return;
       } 
       // check if the address exists
       const allValidators = await db.getValidators(msg.from, msg.chat);
       if (allValidators === null) {
-        bot.sendMessage(chatId, `No validator found. Use /add to create a new one.`);
+        bot.sendMessage(chatId, message.MSG_LIST_NULL);
         return;
       } 
 
       if (allValidators.find((validator) => validator.address === address) === undefined) {
-        bot.sendMessage(chatId, `${address} isn't added yet. Use /add to create a new one.`);
+        bot.sendMessage(chatId, message.MSG_HELP_ADD(address));
         return;
       }
 
       const result = await db.removeValidator(msg.from, msg.chat, address);
       if (result === false) {
-        bot.sendMessage(chatId, `Something went wrong, please try again later. Or visit our website https://cryptolab.network/`);
+        bot.sendMessage(chatId, message.MSG_ERROR_UNKNOWN);
         return;
       }
       
-      resp = `Your address ${address} is removed.`;
-      bot.sendMessage(chatId, `Your address ${address} is removed.`);
+      bot.sendMessage(chatId, message.MSG_REMOVE(address));
     })
 
     bot.onText(/\/list/, async (msg, match) => {
       const result = await db.getValidators(msg.from, msg.chat);
-      
+      console.log(result);
       let resp = '';
-      if (result === null) {
-        resp = 'No validator found. Use /add to create a new one.'
+      if (result === null || result.length === 0) {
+        resp = message.MSG_LIST_NULL;
       } else {
-        resp = result.map(validator => validator.address).join("\n");
+        resp = message.MSG_LIST(result);
       }
       bot.sendMessage(msg.chat.id, resp);
     });
@@ -114,16 +107,13 @@ const Notification = require('./notification');
     bot.onText(/\/trend/, async (msg, match) => {
       const result = await db.getValidators(msg.from, msg.chat);
       let resp = '';
-      if (result === null) {
-        resp = `Please /add validator first. Or visit our website https://cryptolab.network/`;
+      if (result === null || result.length === 0) {
+        resp = message.MSG_TREND_NULL;
       } else {
-        resp = result.map((validator) => {
-          return `https://www.cryptolab.network/tools/validatorStatus?stash=${validator.address}`;
-        });
-        resp = resp.join("\n");
+        resp = message.MSG_TREND(result);
       }
-
-      bot.sendMessage(msg.chat.id, resp);
+      console.log(resp);
+      bot.sendMessage(msg.chat.id, resp, {parse_mode : "HTML"});
     });
 
     // Listen for any kind of message. There are different kinds of
