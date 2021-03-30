@@ -1,14 +1,20 @@
 const emoji = require('node-emoji');
 
 module.exports = {
-  MSG_START: ``,
+  MSG_START: emoji.emojify(`
+:trophy::trophy::trophy: This bot helps you to monitor the nomination status of your validators.
+/add address - :new: add a new validator to your watchlist
+/list - :book: list added validators
+/remove - :scissors: remove an existing validator
+/trend - :chart_with_upwards_trend: show nomination trend of your validators
+/help - :information_desk_person: display this message`),
   MSG_HELP: emoji.emojify(`
-  :trophy::trophy::trophy: This bot helps you to monitor the nomination status of your validators.
-  /add         - :new: add a new validator to your watchlist
-  /list           - :book: list added validators
-  /remove  - :scissors: remove an existing validator
-  /trend      - :chart_with_upwards_trend: show nomination trend of your validators
-  /help        - :information_desk_person: display this message`),
+:trophy::trophy::trophy: This bot helps you to monitor the nomination status of your validators.
+/add address - :new: add a new validator to your watchlist
+/list - :book: list added validators
+/remove - :scissors: remove an existing validator
+/trend - :chart_with_upwards_trend: show nomination trend of your validators
+/help - :information_desk_person: display this message`),
   MSG_ADD: (address, identity) => {
     return emoji.emojify(`:tada: Congragulation! Your address ${address} \n${identity === '' ? '' : '(:white_check_mark: '+identity+' )'} is added to the watchlist. :memo::100: `)
   },

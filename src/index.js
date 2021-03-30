@@ -22,20 +22,11 @@ const message = require('./message');
     polling.start();
 
     bot.onText(/\/start/, (msg, match) => {
-      const help = `
-        This bot helps you to monitor the nomination status of your validator.
-        /add - add a new validator
-        /list - list added validators
-        /remove - remove an existing validator
-        /trend - show nomination trend of your validators
-        /help - display this message
-      `;
-      bot.sendMessage(msg.chat.id, help);
+      bot.sendMessage(msg.chat.id, message.MSG_START);
     })
 
     bot.onText(/\/help/, (msg, match) => {
-      const help = message.MSG_HELP;
-      bot.sendMessage(msg.chat.id, help);
+      bot.sendMessage(msg.chat.id, message.MSG_HELP);
     })
 
     // Matches "/add [whatever]"
