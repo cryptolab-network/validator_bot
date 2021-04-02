@@ -30,12 +30,12 @@ module.exports = {
   },
   MSG_NOMINATION: (validator, oldCount, oldAmount, newCount, newAmount) => {
     if (newCount > oldCount){
-      return emoji.emojify(`:tada: Congragulation!! Your validator ${validator.identity === ''? validator.address : ':white_check_mark: '+validator.identity} recevied new nomination.
+      return emoji.emojify(`:tada: Your validator ${validator.identity === ''? validator.address : ':white_check_mark: '+validator.identity} recevied nomination.
 Nominator count: ${oldCount} :arrow_upper_right: ${newCount}
 Total amount: ${oldAmount} :arrow_upper_right: ${newAmount} KSM
 `);
     } else {
-      return emoji.emojify(`:broken_heart::broken_heart: Your validator ${validator.identity === ''? validator.address : ':white_check_mark: '+validator.identity} lost nominations.
+      return emoji.emojify(`:broken_heart: Your validator ${validator.identity === ''? validator.address : ':white_check_mark: '+validator.identity} lost nomination.
 Nominator count: ${oldCount} :arrow_lower_right: ${newCount}
 Total amount: ${oldAmount} :arrow_lower_right: ${newAmount} KSM
       `);
