@@ -11,6 +11,7 @@ module.exports = class Scheduler {
     this.notificator = notificator;
      // request chaindata every 5 mins.
      this.job_ = new CronJob('*/5 * * * *', async () => {
+      await this.updateValidators();
       await this.collectNominations();
     }, null, true, 'America/Los_Angeles', null, true);
     
@@ -21,10 +22,50 @@ module.exports = class Scheduler {
     this.job_.start();
   }
 
+  async updateValidators() {
+    console.log(`start to update validators...`);
+    let startTime = new Date().getTime();
+    const data = await this.chaindata.getAllValidators();
+    console.log(`data collection time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
+    startTime = new Date().getTime();
+    const allValidators = data.map((v) => {
+      let validator = {};
+      validator.stashId = v.stashId.toString();
+      validator.controllerId = v.controllerId.toString();
+      validator.exposure = {
+        total: v.exposure.total,
+        own: v.exposure.own
+      };
+      validator.exposure.others = v.exposure.others.map((o) => {
+        return {
+          who: o.who.toString(),
+          value: o.value
+        }
+      });
+      validator.validatorPrefs = {
+        commission: v.validatorPrefs.commission,
+        blocked: v.validatorPrefs.blocked === true ? true : false
+      }
+      validator.identity = {};
+      if (v.identity.display !== undefined) {
+        validator.identity.display = v.identity.display;
+      }
+      if (v.identity.displayParent !== undefined) {
+        validator.identity.displayParent = v.identity.displayParent;
+      }
+      validator.active = v.active;
+      return validator;
+    });
+    await this.db.updateValidators(allValidators);
+    console.log(`data process time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
+    console.log('done');
+  }
+
   async collectNominations() {
     console.log(`start to collect nominations...`);
     let startTime = new Date().getTime();
     const nominations = await this.chaindata.getAllNominations();
+    
     console.log(`data collection time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`
     )
     startTime = new Date().getTime();
@@ -71,10 +112,8 @@ module.exports = class Scheduler {
           await this.notificator.send(client.tg_info.chat.id, resp);
           console.log(resp);
         }
-
       }
     }
-
     console.log(`data processing time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`)
   }
 }

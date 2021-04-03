@@ -30,24 +30,70 @@ const message = require('./message');
     })
 
     // Matches "/add [whatever]"
-    // todo check ksm address format
     bot.onText(/\/add (.+)/, async (msg, match) => {
       const chatId = msg.chat.id;
-      const address = match[1];
+      const input = match[1];
 
       // Kusama addresses always start with a capital letter like C, D, F, G, H, J...
       let resp = '';
 
-      if (address.match(/[C-Z].+/)?.index !== 0 && !isValidAddressKusama(address)) {
-        resp = message.MSG_INVALID_ADDR;
-      } else {
-        const res = await chainData.getIdentity(address);
-        const identity = res.identity.display === undefined ? '' : res.identity.display;
-        const result = await db.updateAddress(msg.from, msg.chat, address, identity);
+      // check input type: address or identity
+      if (input.length === 47 && input.match(/[C-Z].+/)?.index === 0 && isValidAddressKusama(input)) {
+        // input is an address
+        const res = await chainData.getIdentity(input);
+        const identity = {
+          display: res.identity.display === undefined ? '' : res.identity.display,
+          displayParent: res.identity.displayParent === undefined ? '' : res.identity.displayParent
+        }
+        const result = await db.updateClient(msg.from, msg.chat, input, identity);
         if (result === false) {
           resp = message.MSG_ERROR_UNKNOWN;
         } else {
-          resp = message.MSG_ADD(address, identity);
+          resp = message.MSG_ADD(input, identity);
+        }
+      } else {
+        // check if input is an identity
+        const ids = input.split('/');
+        if (ids.length === 1) {
+          let result = await db.findIdentity(ids[0]);
+          if (result.length === 0) {
+            resp = message.MSG_INVALID_ADDR;
+          } else if (result.length > 1) {
+            resp = message.MSG_INVALID_ID;
+          } else {
+            // found identity
+            const address = result[0].stashId;
+            const identity = {
+              display: result[0].identity.display,
+              displayParent: result[0].identity.displayParent === undefined ? '' : result[0].identity.displayParent
+            }
+            result = await db.updateClient(msg.from, msg.chat, address, identity);
+            if (result === false) {
+              resp = message.MSG_ERROR_UNKNOWN;
+            } else {
+              resp = message.MSG_ADD(address, identity);
+            }
+          }
+        } else {
+          let result = await db.findIdentityParent(ids[0], ids[1]);
+          if (result.length === 0) {
+            resp = message.MSG_INVALID_ADDR;
+          } else if (result.length > 1) {
+            resp = message.MSG_INVALID_ID;
+          } else {
+            // found identity
+            const address = result[0].stashId;
+            const identity = {
+              display: result[0].identity.display,
+              displayParent: result[0].identity.displayParent === undefined ? '' : result[0].identity.displayParent
+            }
+            result = await db.updateClient(msg.from, msg.chat, address, identity);
+            if (result === false) {
+              resp = message.MSG_ERROR_UNKNOWN;
+            } else {
+              resp = message.MSG_ADD(address, identity);
+            }
+          }
         }
       }
 
@@ -65,7 +111,7 @@ const message = require('./message');
         return;
       } 
       // check if the address exists
-      const allValidators = await db.getValidators(msg.from, msg.chat);
+      const allValidators = await db.getClientValidators(msg.from, msg.chat);
       if (allValidators === null) {
         bot.sendMessage(chatId, message.MSG_LIST_NULL);
         return;
@@ -76,7 +122,7 @@ const message = require('./message');
         return;
       }
 
-      const result = await db.removeValidator(msg.from, msg.chat, address);
+      const result = await db.removeClient(msg.from, msg.chat, address);
       if (result === false) {
         bot.sendMessage(chatId, message.MSG_ERROR_UNKNOWN);
         return;
@@ -86,8 +132,7 @@ const message = require('./message');
     })
 
     bot.onText(/\/list/, async (msg, match) => {
-      const result = await db.getValidators(msg.from, msg.chat);
-      console.log(result);
+      const result = await db.getClientValidators(msg.from, msg.chat);
       let resp = '';
       if (result === null || result.length === 0) {
         resp = message.MSG_LIST_NULL;
@@ -98,14 +143,13 @@ const message = require('./message');
     });
 
     bot.onText(/\/trend/, async (msg, match) => {
-      const result = await db.getValidators(msg.from, msg.chat);
+      const result = await db.getClientValidators(msg.from, msg.chat);
       let resp = '';
       if (result === null || result.length === 0) {
         resp = message.MSG_TREND_NULL;
       } else {
         resp = message.MSG_TREND(result);
       }
-      console.log(resp);
       bot.sendMessage(msg.chat.id, resp, {parse_mode : "HTML"});
     });
 

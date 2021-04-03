@@ -9,6 +9,7 @@ module.exports = class DatabaseHandler {
   connect(name, pass, ip, port, dbName) {
     const self = this;
     this.KsmBot = mongoose.model('KsmBot', this.ksmbotSchema_);
+    this.Validator = mongoose.model('Validator', this.validatorsSchema_);
     mongoose.connect(`mongodb://${name}:${pass}@${ip}:${port}/${dbName}`, {
       useNewUrlParser: true, 
       useUnifiedTopology: true,
@@ -29,7 +30,11 @@ module.exports = class DatabaseHandler {
           count: Number,
           amount: Number
         },
-        identity: String
+        identity: {
+          display: String,
+          displayParent: String
+        },
+        active: Boolean
       }],
       tg_info: {
         from: {
@@ -55,16 +60,42 @@ module.exports = class DatabaseHandler {
     }, {
       timestamps: {}
     });
+
+    this.validatorsSchema_ = new Schema({
+        stashId: String,
+        controllerId: String,
+        exposure: {
+          total: String,
+          own: Number,
+          others: [{
+            who: String,
+            value: Number
+          }]
+        },
+        validatorPrefs: {
+          commission: Number,
+          blocked: Boolean
+        },
+        identity: {
+          display: String,
+          displayParent: String,
+
+        },
+        active: Boolean
+    }, {
+      typeKey: '$type'
+    },{
+      collection: 'validators'
+    }, {
+      timestamps: {}
+    })
   }
 
-  async updateAddress(from, chat, address, identity) {
+  async updateClient(from, chat, address, identity) {
     const user = await this.KsmBot.findOne({
       'tg_info.from.id': from.id,
       'tg_info.chat.id': chat.id
     }).exec();
-
-    console.log(`find user`);
-    console.log(user);
 
     if (user === null) {
       const result = await this.KsmBot.create({
@@ -74,20 +105,17 @@ module.exports = class DatabaseHandler {
             count: 0,
             amount: 0
           },
-          identity: identity
+          identity: identity,
+          active: false
         }],
         tg_info: {
           from: from,
           chat: chat
         }
       });
-      console.log(`create document`);
-      console.log(result);
     } else {
       // check if address exists
       let result = user.validators.find((validator) => validator.address === address);
-      console.log(`find address`);
-      console.log(result);
       if (result === undefined) {
         // insert address
         result = await this.KsmBot.findOneAndUpdate({
@@ -100,7 +128,8 @@ module.exports = class DatabaseHandler {
               count: 0,
               amount: 0
             },
-            identity: identity
+            identity: identity,
+            active: false
           }}
         })
       } else {
@@ -110,15 +139,13 @@ module.exports = class DatabaseHandler {
     return true;
   }
 
-  async removeValidator(from, chat, address) {
+  async removeClient(from, chat, address) {
     const result = await this.KsmBot.findOneAndUpdate({
       'tg_info.from.id': from.id,
       'tg_info.chat.id': chat.id
     },{
       $pull: {'validators': {'address': address}}
     }).exec();
-
-    console.log(result);
 
     if (result === null) {
       return false;
@@ -127,14 +154,11 @@ module.exports = class DatabaseHandler {
     return true;
   }
 
-  async getValidators(from, chat) {
+  async getClientValidators(from, chat) {
     const result = await this.KsmBot.findOne({
       'tg_info.from.id': from.id,
       'tg_info.chat.id': chat.id
     }).exec();
-    
-    console.log(`result = ${typeof result}`);
-    console.log(result);
     if (result === null) {
       return null;
     }
@@ -153,5 +177,38 @@ module.exports = class DatabaseHandler {
     }, {
       $set: {'validators.$.nomination': {count: count, amount: amount}}
     });
+  }
+
+  async updateValidators(validators) {
+    for (const v of validators) {
+      await this.Validator.findOneAndUpdate({
+        stashId: v.stashId
+      }, {
+        $set: {
+          controllerId: v.controllerId,
+          exposure: v.exposure,
+          validatorPrefs: v.validatorPrefs,
+          identity: v.identity,
+          active: v.active
+        }
+      }, {
+        upsert: true
+      });
+    }
+  }
+
+  async findIdentity(id) {
+    const result = await this.Validator.find({
+      'identity.display': id
+    }).exec();
+    return result;
+  }
+
+  async findIdentityParent(parentId, id) {
+    const result = await this.Validator.find({
+      'identity.display': id,
+      'identity.displayParent': parentId
+    }).exec();
+    return result;
   }
 }
