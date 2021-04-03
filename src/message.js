@@ -65,7 +65,8 @@ Total amount: ${oldAmount} :arrow_lower_right: ${newAmount} KSM
     }
   },
   MSG_INVALID_ADDR: emoji.emojify(`:no_entry_sign: Invalid Kusama address`),
-  MSG_INVALID_ID: emoji.emojify(`:no_entry_sign: found multiple records, please input both identity and parent identity with / connected. ex: identityParent/identity`),
+  MSG_INVALID_ID_NOT_FOUND: emoji.emojify(`:no_entry_sign: Found nothing. Please try /add address`),
+  MSG_INVALID_ID: emoji.emojify(`:no_entry_sign: Found multiple records, please input both identity and parent identity with / connected. ex: identityParent/identity`),
   MSG_ERROR_UNKNOWN: emoji.emojify(`
   :ghost::ghost::ghost:Something went wrong, please try again later. 
   Or visit our website [CryptoLab.network](https://www.cryptolab.network/)`),

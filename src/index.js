@@ -57,7 +57,7 @@ const message = require('./message');
         if (ids.length === 1) {
           let result = await db.findIdentity(ids[0]);
           if (result.length === 0) {
-            resp = message.MSG_INVALID_ADDR;
+            resp = message.MSG_INVALID_ID_NOT_FOUND;
           } else if (result.length > 1) {
             resp = message.MSG_INVALID_ID;
           } else {
@@ -77,7 +77,7 @@ const message = require('./message');
         } else {
           let result = await db.findIdentityParent(ids[0], ids[1]);
           if (result.length === 0) {
-            resp = message.MSG_INVALID_ADDR;
+            resp = message.MSG_INVALID_ID_NOT_FOUND;
           } else if (result.length > 1) {
             resp = message.MSG_INVALID_ID;
           } else {
