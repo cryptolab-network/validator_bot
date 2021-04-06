@@ -179,6 +179,32 @@ module.exports = class DatabaseHandler {
     });
   }
 
+  async getClientValidator(from, chat, address) {
+    const result = await this.KsmBot.findOne({
+      'tg_info.from.id': from.id,
+      'tg_info.chat.id': chat.id
+    }).exec();
+    if (result === null) {
+      return null;
+    }
+
+    for (let v of result.validators) {
+      if (v.address === address) {
+        return v;
+      }
+    }
+    return null;
+  }
+
+  async updateActive(_id, address, active) {
+    const result = await this.KsmBot.findOneAndUpdate({
+      'validators._id': _id,
+      'validators.address': address
+    }, {
+      $set: {'validators.$.active': active}
+    });
+  }
+
   async updateValidators(validators) {
     for (const v of validators) {
       await this.Validator.findOneAndUpdate({
@@ -195,6 +221,14 @@ module.exports = class DatabaseHandler {
         upsert: true
       });
     }
+  }
+
+  async getValidator(stashId) {
+    const result = await this.Validator.find({
+      'stashId': stashId
+    }).exec();
+
+    return result;
   }
 
   async findIdentity(id) {

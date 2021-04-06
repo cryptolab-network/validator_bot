@@ -13,6 +13,7 @@ module.exports = class Scheduler {
      this.job_ = new CronJob('*/5 * * * *', async () => {
       await this.updateValidators();
       await this.collectNominations();
+      await this.updateClientStatus();
     }, null, true, 'America/Los_Angeles', null, true);
     
   }
@@ -66,8 +67,7 @@ module.exports = class Scheduler {
     let startTime = new Date().getTime();
     const nominations = await this.chaindata.getAllNominations();
     
-    console.log(`data collection time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`
-    )
+    console.log(`data collection time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
     startTime = new Date().getTime();
 
     let nominators = [];
@@ -115,5 +115,41 @@ module.exports = class Scheduler {
       }
     }
     console.log(`data processing time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`)
+  }
+
+  async updateClientStatus() {
+    console.log(`start to update client status...`);
+    const clients = await this.db.getAllClients();
+
+    for (const client of clients) {
+      for (const validator of client.validators) {
+        let startTime = new Date().getTime();
+        const clientValidator = await this.db.getClientValidator(client.tg_info.from, client.tg_info.chat, validator.address);
+        const status = await this.chaindata.queryStaking(validator.address);
+        if (status.stakingInfo.exposure.total === 0) {
+          // inactive
+          if (clientValidator.active !== false) {
+            await this.db.updateActive(validator._id, validator.address, false);  
+            const resp = message.MSG_STATUS_INACTIVE(validator, status.activeEra);
+            console.log(resp);
+            await this.notificator.send(client.tg_info.chat.id, resp);
+          }
+        } else {
+          // active
+          if (clientValidator.active !== true) {
+            await this.db.updateActive(validator._id, validator.address, true);
+            const resp = message.MSG_STATUS_ACTIVE(validator, status.activeEra, 
+              (status.stakingInfo.exposure.total/KUSAMA_DECIMAL).toFixed(2), 
+              (status.stakingInfo.exposure.own/KUSAMA_DECIMAL).toFixed(2), 
+              status.stakingInfo.validatorPrefs.commission/10000000
+            );
+            console.log(resp);
+            await this.notificator.send(client.tg_info.chat.id, resp);
+          }
+        }
+        console.log(`${validator.address} processing time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
+      }
+    }
+    console.log(`done`);
   }
 }

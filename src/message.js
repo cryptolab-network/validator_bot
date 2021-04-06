@@ -64,6 +64,35 @@ Total amount: ${oldAmount} :arrow_lower_right: ${newAmount} KSM
       `);
     }
   },
+  MSG_STATUS_ACTIVE: (validator, era, total, own, commission) => {
+    let id = '';
+    if (validator.identity.display === '') {
+      id = validator.address;
+    } else if (validator.identity.displayParent === '') {
+      id = ':white_check_mark: '+validator.identity.display;
+    } else {
+      id = ':white_check_mark: ' + validator.identity.displayParent + '/' + validator.identity.display;
+    }
+    return emoji.emojify(`
+:mahjong: Your validator ${id} is active at era ${era}.
+Total active stake: ${total} KSM.
+Own active stake: ${own} KSM.
+Commission: ${commission}%
+`);
+  },
+  MSG_STATUS_INACTIVE: (validator, era) => {
+    let id = '';
+    if (validator.identity.display === '') {
+      id = validator.address;
+    } else if (validator.identity.displayParent === '') {
+      id = ':white_check_mark: '+validator.identity.display;
+    } else {
+      id = ':white_check_mark: ' + validator.identity.displayParent + '/' + validator.identity.display;
+    }
+    return emoji.emojify(`
+:u7121: Your validator ${id} is inactive at ${era}.
+`);
+  },
   MSG_INVALID_ADDR: emoji.emojify(`:no_entry_sign: Invalid Kusama address`),
   MSG_INVALID_ID_NOT_FOUND: emoji.emojify(`:no_entry_sign: Found nothing. Please try /add address`),
   MSG_INVALID_ID: emoji.emojify(`:no_entry_sign: Found multiple records, please input both identity and parent identity with / connected. ex: identityParent/identity`),
