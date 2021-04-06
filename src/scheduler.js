@@ -137,11 +137,12 @@ module.exports = class Scheduler {
         } else {
           // active
           if (clientValidator.active !== true) {
+            console.log(status.stakingInfo.validatorPrefs.commission);
             await this.db.updateActive(validator._id, validator.address, true);
             const resp = message.MSG_STATUS_ACTIVE(validator, status.activeEra, 
               (status.stakingInfo.exposure.total/KUSAMA_DECIMAL).toFixed(2), 
               (status.stakingInfo.exposure.own/KUSAMA_DECIMAL).toFixed(2), 
-              status.stakingInfo.validatorPrefs.commission/10000000
+              (status.stakingInfo.validatorPrefs.commission === 1) ? 0 : status.stakingInfo.validatorPrefs.commission/10000000
             );
             console.log(resp);
             await this.notificator.send(client.tg_info.chat.id, resp);

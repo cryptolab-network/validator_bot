@@ -54,10 +54,8 @@ module.exports = class DatabaseHandler {
         }
       }
     }, { 
-      typeKey: '$type' 
-    }, { 
+      typeKey: '$type',
       collection: 'ksm_bot',
-    }, {
       timestamps: {}
     });
 
@@ -83,10 +81,8 @@ module.exports = class DatabaseHandler {
         },
         active: Boolean
     }, {
-      typeKey: '$type'
-    },{
-      collection: 'validators'
-    }, {
+      typeKey: '$type',
+      collection: 'bot_validators',
       timestamps: {}
     })
   }
