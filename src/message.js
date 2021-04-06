@@ -41,7 +41,7 @@ module.exports = {
   },
   MSG_TREND: (validators) => {
     const prefix = 'Visit our website to get detailed information.\n';
-    return validators.map((v) => {
+    return prefix + validators.map((v) => {
       if (v.identity.display === '') {
         return emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/validatorStatus?stash=${v.address}&coin=KSM">${v.address}</a>`);
       } else if (v.identity.displayParent === '') {
@@ -50,7 +50,6 @@ module.exports = {
         return emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/validatorStatus?stash=${v.address}&coin=KSM">${v.identity.displayParent}/${v.identity.display}</a>`);
       }
     }).join("\n");
-    return prefix + validators.map((v) => emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/validatorStatus?stash=${v.address}&coin=KSM">${v.identity === ''? v.address : v.identity}</a>`)).join("\n");
   },
   MSG_NOMINATION: (validator, oldCount, oldAmount, newCount, newAmount) => {
     let id = '';
