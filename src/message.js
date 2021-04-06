@@ -55,12 +55,12 @@ module.exports = {
     if (newCount > oldCount){
       return emoji.emojify(`:tada: Your validator ${id} recevied nomination.
 Nominator count: ${newCount} (:arrow_up_small: ${newCount - oldCount})
-Total amount: ${newAmount} (:arrow_up_small: ${newAmount - oldAmount}) KSM
+Total amount: ${newAmount} (:arrow_up_small: ${(newAmount - oldAmount).toFixed(2)}) KSM
 `);
     } else {
       return emoji.emojify(`:broken_heart: Your validator ${id} lost nomination.
 Nominator count: ${newCount} (:small_red_triangle_down: ${oldCount - newCount})
-Total amount: ${newAmount} (:small_red_triangle_down: ${oldAmount - newAmount}) KSM
+Total amount: ${newAmount} (:small_red_triangle_down: ${(oldAmount - newAmount).toFixed(2)}) KSM
       `);
     }
   },
