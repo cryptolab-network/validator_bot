@@ -17,11 +17,11 @@ module.exports = {
 /help - :information_desk_person: display this message`),
   MSG_ADD: (address, identity) => {
     if (identity.display === '') {
-      return emoji.emojify(`:tada: Congragulation! Your address ${address} \nis added to the watchlist. :memo::100: `);
+      return emoji.emojify(`:tada: Your address ${address} \nis added to the watchlist. :memo::100: `);
     } else if (identity.displayParent === '') {
-      return emoji.emojify(`:tada: Congragulation! Your address ${address} \n(:white_check_mark: ${identity.display}) is added to the watchlist. :memo::100: `);
+      return emoji.emojify(`:tada: Your address ${address} \n(:white_check_mark: ${identity.display}) is added to the watchlist. :memo::100: `);
     } else {
-      return emoji.emojify(`:tada: Congragulation! Your address ${address} \n(:white_check_mark: ${identity.displayParent}/${identity.display}) is added to the watchlist. :memo::100: `);
+      return emoji.emojify(`:tada: Your address ${address} \n(:white_check_mark: ${identity.displayParent}/${identity.display}) is added to the watchlist. :memo::100: `);
     }
   },
   MSG_LIST: (validators) => {
