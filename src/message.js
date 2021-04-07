@@ -7,14 +7,14 @@ module.exports = {
 /list - :book: list added validators
 /remove - :scissors: remove an existing validator
 /trend - :chart_with_upwards_trend: show nomination trend of your validators
-/help - :information_desk_person: display this message`),
+/help - :information_desk_person: show command list`),
   MSG_HELP: emoji.emojify(`
 :trophy::trophy::trophy: This bot helps you to monitor the nomination status of your validators.
 /add address or identity - :new: add a new validator to your watchlist
 /list - :book: list added validators
 /remove - :scissors: remove an existing validator
 /trend - :chart_with_upwards_trend: show nomination trend of your validators
-/help - :information_desk_person: display this message`),
+/help - :information_desk_person: show command list`),
   MSG_ADD: (address, identity) => {
     if (identity.display === '') {
       return emoji.emojify(`:tada: Your address ${address} \nis added to the watchlist. :memo::100: `);
