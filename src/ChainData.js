@@ -124,7 +124,7 @@ module.exports = class ChainData {
         activeEra: activeEra.unwrap().index.toNumber(),
         stakingInfo: {
           exposure: {
-            total: stakingInfo.exposure.total.unwrap().toNumber(),
+            total: stakingInfo.exposure.total.unwrap(),
             own: stakingInfo.exposure.own.unwrap().toNumber(),
           },
           validatorPrefs: {

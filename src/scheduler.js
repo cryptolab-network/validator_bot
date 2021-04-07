@@ -130,7 +130,9 @@ module.exports = class Scheduler {
           console.log(JSON.stringify(validator, undefined, 1));
           continue;
         }
-        if (status.stakingInfo.exposure.total === 0) {
+        // handle big number
+        status.stakingInfo.exposure.total = new bn(status.stakingInfo.exposure.total.toString(10));
+        if (status.stakingInfo.exposure.total.isZero()) {
           // inactive
           if (clientValidator.era !== status.activeEra || clientValidator.active !== false) {
             await this.db.updateActive(validator._id, validator.address, status.activeEra, false);  
@@ -144,7 +146,7 @@ module.exports = class Scheduler {
             console.log(status.stakingInfo.validatorPrefs.commission);
             await this.db.updateActive(validator._id, validator.address, status.activeEra, true);
             const resp = message.MSG_STATUS_ACTIVE(validator, status.activeEra, 
-              (status.stakingInfo.exposure.total/KUSAMA_DECIMAL).toFixed(2), 
+              (status.stakingInfo.exposure.total.div(new bn(KUSAMA_DECIMAL))).toFixed(2).toString(), 
               (status.stakingInfo.exposure.own/KUSAMA_DECIMAL).toFixed(2), 
               (status.stakingInfo.validatorPrefs.commission === 1) ? 0 : status.stakingInfo.validatorPrefs.commission/10000000
             );
