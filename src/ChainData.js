@@ -108,29 +108,33 @@ module.exports = class ChainData {
   }
 
   queryStaking = async (address) => {
-    const api = await this.handler.getApi();
-    const [activeEra, stakingInfo] = await Promise.all([
-      api.query.staking.activeEra(),
-      api.derive.staking.query(address, {
-        withDestination: true,
-        withExposure: true,
-        withLedger: true,
-        withNominations: true,
-        withPrefs: true,
-      })
-    ]);
-    return {
-      activeEra: activeEra.unwrap().index.toNumber(),
-      stakingInfo: {
-        exposure: {
-          total: stakingInfo.exposure.total.unwrap().toNumber(),
-          own: stakingInfo.exposure.own.unwrap().toNumber(),
-        },
-        validatorPrefs: {
-          commission: stakingInfo.validatorPrefs.commission.unwrap().toNumber(),
-          blocked: stakingInfo.validatorPrefs.blocked.valueOf()
+    try {
+      const api = await this.handler.getApi();
+      const [activeEra, stakingInfo] = await Promise.all([
+        api.query.staking.activeEra(),
+        api.derive.staking.query(address, {
+          withDestination: true,
+          withExposure: true,
+          withLedger: true,
+          withNominations: true,
+          withPrefs: true,
+        })
+      ]);
+      return {
+        activeEra: activeEra.unwrap().index.toNumber(),
+        stakingInfo: {
+          exposure: {
+            total: stakingInfo.exposure.total.unwrap().toNumber(),
+            own: stakingInfo.exposure.own.unwrap().toNumber(),
+          },
+          validatorPrefs: {
+            commission: stakingInfo.validatorPrefs.commission.unwrap().toNumber(),
+            blocked: stakingInfo.validatorPrefs.blocked.valueOf()
+          }
         }
       }
+    } catch (err) {
+      console.log(err);
     }
   }
 
