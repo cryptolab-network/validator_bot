@@ -135,6 +135,7 @@ module.exports = class ChainData {
       }
     } catch (err) {
       console.log(err);
+      return null;
     }
   }
 

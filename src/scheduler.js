@@ -126,6 +126,10 @@ module.exports = class Scheduler {
         let startTime = new Date().getTime();
         const clientValidator = await this.db.getClientValidator(client.tg_info.from, client.tg_info.chat, validator.address);
         const status = await this.chaindata.queryStaking(validator.address);
+        if (status === null) {
+          console.log(JSON.stringify(validator, undefined, 1));
+          continue;
+        }
         if (status.stakingInfo.exposure.total === 0) {
           // inactive
           if (clientValidator.era !== status.activeEra || clientValidator.active !== false) {
