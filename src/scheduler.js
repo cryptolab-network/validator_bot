@@ -128,17 +128,17 @@ module.exports = class Scheduler {
         const status = await this.chaindata.queryStaking(validator.address);
         if (status.stakingInfo.exposure.total === 0) {
           // inactive
-          if (clientValidator.active !== false) {
-            await this.db.updateActive(validator._id, validator.address, false);  
+          if (clientValidator.era !== status.activeEra || clientValidator.active !== false) {
+            await this.db.updateActive(validator._id, validator.address, status.activeEra, false);  
             const resp = message.MSG_STATUS_INACTIVE(validator, status.activeEra);
             console.log(resp);
             await this.notificator.send(client.tg_info.chat.id, resp);
           }
         } else {
           // active
-          if (clientValidator.active !== true) {
+          if (clientValidator.era !== status.activeEra || clientValidator.active !== true) {
             console.log(status.stakingInfo.validatorPrefs.commission);
-            await this.db.updateActive(validator._id, validator.address, true);
+            await this.db.updateActive(validator._id, validator.address, status.activeEra, true);
             const resp = message.MSG_STATUS_ACTIVE(validator, status.activeEra, 
               (status.stakingInfo.exposure.total/KUSAMA_DECIMAL).toFixed(2), 
               (status.stakingInfo.exposure.own/KUSAMA_DECIMAL).toFixed(2), 

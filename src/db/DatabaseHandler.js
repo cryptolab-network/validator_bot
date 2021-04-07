@@ -34,7 +34,8 @@ module.exports = class DatabaseHandler {
           display: String,
           displayParent: String
         },
-        active: Boolean
+        active: Boolean,
+        era: Number
       }],
       tg_info: {
         from: {
@@ -102,7 +103,8 @@ module.exports = class DatabaseHandler {
             amount: 0
           },
           identity: identity,
-          active: false
+          active: false,
+          era: 0
         }],
         tg_info: {
           from: from,
@@ -125,7 +127,8 @@ module.exports = class DatabaseHandler {
               amount: 0
             },
             identity: identity,
-            active: false
+            active: false,
+            era: 0
           }}
         })
       } else {
@@ -192,12 +195,15 @@ module.exports = class DatabaseHandler {
     return null;
   }
 
-  async updateActive(_id, address, active) {
+  async updateActive(_id, address, era, active) {
     const result = await this.KsmBot.findOneAndUpdate({
       'validators._id': _id,
       'validators.address': address
     }, {
-      $set: {'validators.$.active': active}
+      $set: {
+        'validators.$.active': active,
+        'validators.$.era': era
+      }
     });
   }
 
