@@ -19,6 +19,7 @@
     "mongoose": "^5.12.2",
     "node-emoji": "^1.10.0",
     "node-telegram-bot-api": "^0.51.0",
+    "substrate-telemetry-receiver": "git+ssh://git@github.com/cryptolab-network/substrate-telemetry-receiver.git",
     "ws": "^7.4.4"
   },
   "devDependencies": {

@@ -6,7 +6,7 @@ const ApiHandler = require('./ApiHandler');
 const ChainData = require('./ChainData');
 const Scheduler = require('./scheduler');
 const Notification = require('./notification');
-const Telemetry = require('./telemetry');
+const Telemetry = require('substrate-telemetry-receiver');
 const message = require('./message');
 
 (async ()=> {
@@ -23,6 +23,43 @@ const message = require('./message');
     const telemetryOfficial = new Telemetry('wss://telemetry.polkadot.io/feed/', 'Kusama');
     telemetry.connect();
     telemetryOfficial.connect();
+
+    telemetry.on('node_online', (nodeAddress) => {
+      console.log(`${nodeAddress} is online`);
+    });
+
+    telemetry.on('node_offline', (nodeAddress) => {
+      console.log(`${nodeAddress} is offline`);
+    });
+
+    telemetry.on('close', () => {
+      setTimeout(() => {
+        telemetry.connect();
+      }, 5000);
+    });
+
+    telemetry.on('error', (err) => {
+      console.error(err);
+    });
+
+    telemetryOfficial.on('node_online', (nodeAddress) => {
+      console.log(`${nodeAddress} is online`);
+    });
+
+    telemetryOfficial.on('node_offline', (nodeAddress) => {
+      console.log(`${nodeAddress} is offline`);
+    });
+
+    telemetryOfficial.on('close', () => {
+      setTimeout(() => {
+        telemetryOfficial.connect();
+      }, 5000);
+    });
+
+    telemetryOfficial.on('error', (err) => {
+      console.error(err);
+    });
+
     const polling = new Scheduler(chainData, db, notification);
     polling.start();
 
