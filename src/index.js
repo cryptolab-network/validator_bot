@@ -24,12 +24,12 @@ const message = require('./message');
     telemetry.connect();
     telemetryOfficial.connect();
 
-    telemetry.on('node_online', (nodeAddress) => {
-      console.log(`${nodeAddress} is online`);
+    telemetry.on('node_online', (nodeName) => {
+      console.log(`${nodeName} is online`);
     });
 
-    telemetry.on('node_offline', (nodeAddress) => {
-      console.log(`${nodeAddress} is offline`);
+    telemetry.on('node_offline', (nodeName) => {
+      console.log(`${nodeName} is offline`);
     });
 
     telemetry.on('close', () => {
@@ -42,12 +42,12 @@ const message = require('./message');
       console.error(err);
     });
 
-    telemetryOfficial.on('node_online', (nodeAddress) => {
-      console.log(`${nodeAddress} is online`);
+    telemetryOfficial.on('node_online', (nodeName) => {
+      console.log(`${nodeName} is online`);
     });
 
-    telemetryOfficial.on('node_offline', (nodeAddress) => {
-      console.log(`${nodeAddress} is offline`);
+    telemetryOfficial.on('node_offline', (nodeName) => {
+      console.log(`${nodeName} is offline`);
     });
 
     telemetryOfficial.on('close', () => {
