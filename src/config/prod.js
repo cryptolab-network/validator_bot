@@ -8,4 +8,6 @@ module.exports = {
   MONGO_URL: process.env.MONGO_URL,
   MONGO_PORT: process.env.MONGO_PORT,
   MONGO_DBNAME: process.env.MONGO_DBNAME,
+  TELEMETRY_1KV: process.env.TELEMETRY_1KV,
+  TELEMETRY_OFFICIAL: process.env.TELEMETRY_OFFICIAL,
 }

@@ -19,44 +19,53 @@ const message = require('./message');
     // Create a bot that uses 'polling' to fetch new updates
     const bot = new TelegramBot(token, {polling: true});
     const notification = new Notification(bot);
-    const telemetry = new Telemetry('wss://telemetry.w3f.community/feed/', 'Kusama');
-    const telemetryOfficial = new Telemetry('wss://telemetry.polkadot.io/feed/', 'Kusama');
-    telemetry.connect();
-    telemetryOfficial.connect();
+    const telemetry = new Telemetry(keys.TELEMETRY_1KV, 'Kusama');
+    const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, 'Kusama');
+    
+    // await telemetry.connect();
+    // await telemetryOfficial.connect();
 
     telemetry.on('node_online', (nodeAddress) => {
-      console.log(`${nodeAddress} is online`);
+      console.log(`1kv`);
+      console.log(`====================== ${nodeAddress} is online`);
     });
 
     telemetry.on('node_offline', (nodeAddress) => {
+      console.log(`1kv`);
       console.log(`${nodeAddress} is offline`);
     });
 
     telemetry.on('close', () => {
+      console.log(`1kv`);
       setTimeout(() => {
         telemetry.connect();
       }, 5000);
     });
 
     telemetry.on('error', (err) => {
+      console.log(`1kv`);
       console.error(err);
     });
 
     telemetryOfficial.on('node_online', (nodeAddress) => {
+      console.log(`official`);
       console.log(`${nodeAddress} is online`);
     });
 
     telemetryOfficial.on('node_offline', (nodeAddress) => {
+      console.log(`official`);
       console.log(`${nodeAddress} is offline`);
     });
 
     telemetryOfficial.on('close', () => {
+      console.log(`official`);
       setTimeout(() => {
         telemetryOfficial.connect();
       }, 5000);
     });
 
     telemetryOfficial.on('error', (err) => {
+      console.log(`official`);
       console.error(err);
     });
 
