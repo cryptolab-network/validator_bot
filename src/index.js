@@ -73,11 +73,11 @@ const message = require('./message');
     polling.start();
 
     bot.onText(/\/start/, (msg, match) => {
-      bot.sendMessage(msg.chat.id, message.MSG_START);
+      bot.sendMessage(msg.chat.id, message.MSG_START());
     })
 
     bot.onText(/\/help/, (msg, match) => {
-      bot.sendMessage(msg.chat.id, message.MSG_HELP);
+      bot.sendMessage(msg.chat.id, message.MSG_HELP());
     })
 
     // Matches "/add [whatever]"
@@ -98,7 +98,7 @@ const message = require('./message');
         }
         const result = await db.updateClient(msg.from, msg.chat, input, identity);
         if (result === false) {
-          resp = message.MSG_ERROR_UNKNOWN;
+          resp = message.MSG_ERROR_UNKNOWN();
         } else {
           resp = message.MSG_ADD(input, identity);
         }
@@ -108,9 +108,9 @@ const message = require('./message');
         if (ids.length === 1) {
           let result = await db.findIdentity(ids[0]);
           if (result.length === 0) {
-            resp = message.MSG_INVALID_ID_NOT_FOUND;
+            resp = message.MSG_INVALID_ID_NOT_FOUND();
           } else if (result.length > 1) {
-            resp = message.MSG_INVALID_ID;
+            resp = message.MSG_INVALID_ID();
           } else {
             // found identity
             const address = result[0].stashId;
@@ -120,7 +120,7 @@ const message = require('./message');
             }
             result = await db.updateClient(msg.from, msg.chat, address, identity);
             if (result === false) {
-              resp = message.MSG_ERROR_UNKNOWN;
+              resp = message.MSG_ERROR_UNKNOWN();
             } else {
               resp = message.MSG_ADD(address, identity);
             }
@@ -128,9 +128,9 @@ const message = require('./message');
         } else {
           let result = await db.findIdentityParent(ids[0], ids[1]);
           if (result.length === 0) {
-            resp = message.MSG_INVALID_ID_NOT_FOUND;
+            resp = message.MSG_INVALID_ID_NOT_FOUND();
           } else if (result.length > 1) {
-            resp = message.MSG_INVALID_ID;
+            resp = message.MSG_INVALID_ID();
           } else {
             // found identity
             const address = result[0].stashId;
@@ -140,7 +140,7 @@ const message = require('./message');
             }
             result = await db.updateClient(msg.from, msg.chat, address, identity);
             if (result === false) {
-              resp = message.MSG_ERROR_UNKNOWN;
+              resp = message.MSG_ERROR_UNKNOWN();
             } else {
               resp = message.MSG_ADD(address, identity);
             }
@@ -158,13 +158,13 @@ const message = require('./message');
 
       // Kusama addresses always start with a capital letter like C, D, F, G, H, J...
       if (address.match(/[C-Z].+/)?.index !== 0 && !isValidAddressKusama(address)) {
-        bot.sendMessage(chatId, message.MSG_INVALID_ADDR);
+        bot.sendMessage(chatId, message.MSG_INVALID_ADDR());
         return;
       } 
       // check if the address exists
       const allValidators = await db.getClientValidators(msg.from, msg.chat);
       if (allValidators === null) {
-        bot.sendMessage(chatId, message.MSG_LIST_NULL);
+        bot.sendMessage(chatId, message.MSG_LIST_NULL());
         return;
       } 
 
@@ -175,7 +175,7 @@ const message = require('./message');
 
       const result = await db.removeClient(msg.from, msg.chat, address);
       if (result === false) {
-        bot.sendMessage(chatId, message.MSG_ERROR_UNKNOWN);
+        bot.sendMessage(chatId, message.MSG_ERROR_UNKNOWN());
         return;
       }
       
@@ -186,7 +186,7 @@ const message = require('./message');
       const result = await db.getClientValidators(msg.from, msg.chat);
       let resp = '';
       if (result === null || result.length === 0) {
-        resp = message.MSG_LIST_NULL;
+        resp = message.MSG_LIST_NULL();
       } else {
         resp = message.MSG_LIST(result);
       }
@@ -197,9 +197,20 @@ const message = require('./message');
       const result = await db.getClientValidators(msg.from, msg.chat);
       let resp = '';
       if (result === null || result.length === 0) {
-        resp = message.MSG_TREND_NULL;
+        resp = message.MSG_TREND_NULL();
       } else {
-        resp = message.MSG_TREND(result);
+        resp = message.MSG_NOMINATION_TREND(result);
+      }
+      bot.sendMessage(msg.chat.id, resp, {parse_mode : "HTML"});
+    });
+
+    bot.onText(/\/reward/, async (msg, match) => {
+      const result = await db.getClientValidators(msg.from, msg.chat);
+      let resp = '';
+      if (result === null || result.length === 0) {
+        resp = message.MSG_TREND_NULL();
+      } else {
+        resp = message.MSG_REWARD_TREND(result);
       }
       bot.sendMessage(msg.chat.id, resp, {parse_mode : "HTML"});
     });
