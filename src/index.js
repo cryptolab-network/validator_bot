@@ -8,6 +8,7 @@ const Scheduler = require('./scheduler');
 const Notification = require('./notification');
 const Telemetry = require('substrate-telemetry-receiver');
 const message = require('./message');
+const Release = require('./release');
 
 (async ()=> {
   try {
@@ -71,6 +72,9 @@ const message = require('./message');
 
     const polling = new Scheduler(chainData, db, notification);
     polling.start();
+
+    const release = new Release(db, notification);
+    await release.checkReleaseNote();
 
     bot.onText(/\/start/, (msg, match) => {
       bot.sendMessage(msg.chat.id, message.MSG_START());

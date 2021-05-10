@@ -163,6 +163,15 @@ const MSG_TREND_NULL = () => {
   <a href="https://www.cryptolab.network">CryptoLab.network</a>`);
 }
 
+const MSG_NEW_RELEASE_NOTE = () => {
+  return emoji.emojify(`
+  :gift: New feature released! :rocket:
+
+  - :pizza: /reward command shows weekly reward trend of your validators
+
+  `)
+}
+
 module.exports = {
   MSG_START,
   MSG_HELP,
@@ -181,4 +190,5 @@ module.exports = {
   MSG_LIST_NULL,
   MSG_HELP_ADD,
   MSG_TREND_NULL,
+  MSG_NEW_RELEASE_NOTE
 }
