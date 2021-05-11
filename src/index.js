@@ -77,8 +77,8 @@ const Release = require('./release');
         for (const node of v.telemetry) {
           if (node.name === nodeName) {
             // send notification
-            console.log(message.MSG_TELEMETRY_NODE_OFFLINE(nodeName));
-            const resp = message.MSG_TELEMETRY_NODE_OFFLINE(nodeName);
+            console.log(message.MSG_TELEMETRY_NODE_ONLINE(nodeName));
+            const resp = message.MSG_TELEMETRY_NODE_ONLINE(nodeName);
             await notification.send(v.chatId, resp);
           }
         }
