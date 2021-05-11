@@ -26,18 +26,39 @@ const Release = require('./release');
     await telemetry.connect();
     await telemetryOfficial.connect();
 
-    telemetry.on('node_online', (nodeAddress) => {
-      console.log(`1kv`);
-      console.log(`====================== ${nodeAddress} is online`);
+    telemetry.on('node_online', async (nodeName) => {
+      // console.log(`1kv`);
+      // console.log(`====================== ${nodeName} is online`);
+      const result = await db.getTelemetryNodesWithChatId(keys.TELEMETRY_1KV);
+      for (const v of result) {
+        for (const node of v.telemetry) {
+          if (node.name === nodeName) {
+            // send notification
+            console.log(message.MSG_TELEMETRY_NODE_ONLINE(nodeName));
+            const resp = message.MSG_TELEMETRY_NODE_ONLINE(nodeName);
+            await notification.send(v.chatId, resp);
+          }
+        }
+      }
     });
 
-    telemetry.on('node_offline', (nodeAddress) => {
-      console.log(`1kv`);
-      console.log(`${nodeAddress} is offline`);
+    telemetry.on('node_offline', async (nodeName) => {
+      // console.log(`1kv`);
+      // console.log(`${nodeName} is offline`);
+      const result = await db.getTelemetryNodesWithChatId(keys.TELEMETRY_1KV);
+      for (const v of result) {
+        for (const node of v.telemetry) {
+          if (node.name === nodeName) {
+            // send notification
+            console.log(message.MSG_TELEMETRY_NODE_OFFLINE(nodeName));
+            const resp = message.MSG_TELEMETRY_NODE_OFFLINE(nodeName);
+            await notification.send(v.chatId, resp);
+          }
+        }
+      }
     });
 
     telemetry.on('close', () => {
-      console.log(`1kv`);
       setTimeout(() => {
         telemetry.connect();
       }, 5000);
@@ -48,14 +69,34 @@ const Release = require('./release');
       console.error(err);
     });
 
-    telemetryOfficial.on('node_online', (nodeAddress) => {
-      console.log(`official`);
-      console.log(`${nodeAddress} is online`);
+    telemetryOfficial.on('node_online', async (nodeName) => {
+      // console.log(`official`);
+      // console.log(`${nodeName} is online`);
+      const result = await db.getTelemetryNodesWithChatId(keys.TELEMETRY_OFFICIAL);
+      for (const v of result) {
+        for (const node of v.telemetry) {
+          if (node.name === nodeName) {
+            // send notification
+            console.log(message.MSG_TELEMETRY_NODE_OFFLINE(nodeName));
+            const resp = message.MSG_TELEMETRY_NODE_OFFLINE(nodeName);
+            await notification.send(v.chatId, resp);
+          }
+        }
+      }
     });
 
-    telemetryOfficial.on('node_offline', (nodeAddress) => {
-      console.log(`official`);
-      console.log(`${nodeAddress} is offline`);
+    telemetryOfficial.on('node_offline', async (nodeName) => {
+      // console.log(`official`);
+      // console.log(`${nodeName} is offline`);
+      const result = await db.getTelemetryNodesWithChatId(keys.TELEMETRY_OFFICIAL);
+      for (const node of result) {
+        if (node.telemetry.name === nodeName) {
+          // send notification
+          console.log(message.MSG_TELEMETRY_NODE_OFFLINE(nodeName));
+          const resp = message.MSG_TELEMETRY_NODE_OFFLINE(nodeName);
+          await notification.send(node.chatId, resp);
+        }
+      }
     });
 
     telemetryOfficial.on('close', () => {

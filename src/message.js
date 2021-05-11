@@ -101,6 +101,14 @@ const MSG_TELEMETRY_REMOVE = (name) => {
   return emoji.emojify(`:fire: Success! You've removed ${name} from the telemetry watchlist.`);
 }
 
+const MSG_TELEMETRY_NODE_ONLINE = (name) => {
+  return emoji.emojify(`:smile_cat: Your ${name} node is online.`);
+}
+
+const MSG_TELEMETRY_NODE_OFFLINE = (name) => {
+  return emoji.emojify(`:warning::warning::warning: Your ${name} node is offline.`);
+}
+
 const MSG_NOMINATION = (validator, oldCount, oldAmount, newCount, newAmount) => {
   let id = '';
   if (validator.identity.display === '') {
@@ -222,6 +230,8 @@ module.exports = {
   MSG_TELEMETRY_NOT_FOUND,
   MSG_TELEMETRY_LIST,
   MSG_TELEMETRY_REMOVE,
+  MSG_TELEMETRY_NODE_ONLINE,
+  MSG_TELEMETRY_NODE_OFFLINE,
   MSG_NOMINATION,
   MSG_STATUS_ACTIVE,
   MSG_STATUS_INACTIVE,

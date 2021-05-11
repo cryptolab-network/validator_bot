@@ -331,4 +331,19 @@ module.exports = class DatabaseHandler {
 
     return true;
   }
+
+  async getTelemetryNodesWithChatId(channel) {
+    const result = await this.KsmBot.find({
+      'telemetry.channel': channel
+    });
+    if (result === null) {
+      return null;
+    }
+    return result.map((item) => {
+      return {
+        chatId: item.tg_info.chat.id,
+        telemetry: item.telemetry
+      }
+    })
+  }
 }
