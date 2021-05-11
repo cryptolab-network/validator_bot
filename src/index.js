@@ -23,8 +23,8 @@ const Release = require('./release');
     const telemetry = new Telemetry(keys.TELEMETRY_1KV, 'Kusama');
     const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, 'Kusama');
     
-    // await telemetry.connect();
-    // await telemetryOfficial.connect();
+    await telemetry.connect();
+    await telemetryOfficial.connect();
 
     telemetry.on('node_online', (nodeAddress) => {
       console.log(`1kv`);
@@ -218,6 +218,89 @@ const Release = require('./release');
       }
       bot.sendMessage(msg.chat.id, resp, {parse_mode : "HTML"});
     });
+
+    bot.onText(/\/telemetry (.+)/, async (msg, match) => {
+      const chatId = msg.chat.id;
+      const name = match[1];
+      let isFound = false;
+      let channel = '';
+      let node = {};
+      console.log(telemetry.nodes.length);
+      console.log(typeof telemetry.nodes);
+
+      for (const key of Object.keys(telemetry.nodes)) {
+        if (telemetry.nodes[key].name === name) {
+          isFound = true;
+          channel = keys.TELEMETRY_1KV;
+          node = telemetry.nodes[key];
+          console.log(`found!`);
+          console.log(telemetry.nodes[key]);
+        }
+      }
+      if (isFound === false) {
+        for (const key of Object.keys(telemetryOfficial.nodes)) {
+          if (telemetryOfficial.nodes[key].name === name) {
+            isFound = true;
+            channel = keys.TELEMETRY_OFFICIAL;
+            node = telemetryOfficial.nodes[key];
+            console.log(`found!`);
+            console.log(telemetryOfficial.nodes[key]);
+          }
+        }
+        console.log(telemetryOfficial.nodes.length);
+      }
+
+      if (isFound === true) {
+        const result = await db.updateTelemetry(msg.from, msg.chat, channel, node);
+        if (result === false) {
+          console.log(`insert telemetry node failed`);
+          resp = message.MSG_ERROR_UNKNOWN();
+        } else {
+          console.log(`insert telemetry node success`);
+          resp = message.MSG_TELEMETRY_ADD(node);
+        }
+      } else {
+        console.log(`found nothing`);
+        resp = message.MSG_TELEMETRY_NOT_FOUND(name);
+      }
+      bot.sendMessage(msg.chat.id, resp);
+    });
+
+    bot.onText(/\/telemetryList/, async (msg, match) => {
+      const result = await db.getTelemetryNodes(msg.from, msg.chat);
+      let resp = '';
+      if (result === null || result.length === 0) {
+        resp = message.MSG_TELEMETRY_LIST_NULL();
+      } else {
+        resp = message.MSG_TELEMETRY_LIST(result);
+      }
+      bot.sendMessage(msg.chat.id, resp);
+    });
+
+    bot.onText(/\/telemetryRemove (.+)/, async (msg, match) => {
+      const chatId = msg.chat.id;
+      const name = match[1];
+
+      // check if the address exists
+      const allNodes = await db.getTelemetryNodes(msg.from, msg.chat);
+      if (allNodes === null) {
+        bot.sendMessage(chatId, message.MSG_TELEMETRY_LIST_NULL());
+        return;
+      } 
+
+      if (allNodes.find((node) => node.name === name) === undefined) {
+        bot.sendMessage(chatId, message.MSG_HELP_TELEMETRY(name));
+        return;
+      }
+
+      const result = await db.removeTelemetry(msg.from, msg.chat, name);
+      if (result === false) {
+        bot.sendMessage(chatId, message.MSG_ERROR_UNKNOWN());
+        return;
+      }
+      
+      bot.sendMessage(chatId, message.MSG_TELEMETRY_REMOVE(name));
+    })
 
     // Listen for any kind of message. There are different kinds of
     // messages.

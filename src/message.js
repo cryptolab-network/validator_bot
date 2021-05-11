@@ -8,6 +8,9 @@ const MSG_START = () => {
 /remove - :scissors: remove an existing validator
 /trend - :chart_with_upwards_trend: show nomination trend of your validators
 /reward - :pizza: show reward trend of your validators
+/telemetry name - :new: add a new node name to your telemetry watchlist
+/telemetryList - :green_book: list added node name of the telemetry watchlist
+/telemetryRemove name - :scissors: remove an existing node name of the telemetry watchlist
 /help - :information_desk_person: show command list`)
 }
 
@@ -19,6 +22,9 @@ const MSG_HELP = () => {
 /remove - :scissors: remove an existing validator
 /trend - :chart_with_upwards_trend: show nomination trend of your validators
 /reward - :pizza: show reward trend of your validators
+/telemetry name - :new: add a new node name to your telemetry watchlist
+/telemetryList - :green_book: list added node name of the telemetry watchlist
+/telemetryRemove name - :scissors: remove an existing node name of the telemetry watchlist
 /help - :information_desk_person: show command list`)
 }
 
@@ -72,6 +78,27 @@ const MSG_REWARD_TREND = (validators) => {
       return emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/dotSR/${v.address}">${v.identity.displayParent}/${v.identity.display}</a>`);
     }
   }).join("\n");
+}
+
+const MSG_TELEMETRY_ADD = (node) => {
+  return emoji.emojify(`:tada: Your node ${node.name} \nis added to the telemetry watchlist. :memo::100:`)
+}
+
+const MSG_TELEMETRY_NOT_FOUND = (name) => {
+  return emoji.emojify(`:no_entry_sign: Found nothing. Please check your node name on the following telemetry channels:
+:one: wss://telemetry.w3f.community/feed/
+:two: wss://telemetry.polkadot.io/feed/
+`);
+}
+
+const MSG_TELEMETRY_LIST = (nodes) => {
+  return nodes.map((node) => {
+    return emoji.emojify(`:eyes: :white_check_mark: ${node.name}`);
+  }).join("\n");
+}
+
+const MSG_TELEMETRY_REMOVE = (name) => {
+  return emoji.emojify(`:fire: Success! You've removed ${name} from the telemetry watchlist.`);
 }
 
 const MSG_NOMINATION = (validator, oldCount, oldAmount, newCount, newAmount) => {
@@ -149,10 +176,21 @@ const MSG_LIST_NULL = () => {
   return emoji.emojify(`:zero: Your watchlist is empty. Use /add to create a :new: one.`);
 }
 
+const MSG_TELEMETRY_LIST_NULL = () => {
+  return emoji.emojify(`:zero: Your telemetry watchlist is empty. Use /telemetry to create a :new: one.`);
+}
+
 const MSG_HELP_ADD = (address) => {
   return emoji.emojify(`:raising_hand: Your watchlist doesn't include this address yet. 
 Please use /add to create a new one. For example,
 /add ${address}
+`);
+}
+
+const MSG_HELP_TELEMETRY = (name) => {
+  return emoji.emojify(`:raising_hand: Your telemetry watchlist doesn't include this node yet. 
+Please use /telemetry to create a new one. For example,
+/telemetry ${name}
 `);
 }
 
@@ -180,6 +218,10 @@ module.exports = {
   MSG_REMOVE,
   MSG_NOMINATION_TREND,
   MSG_REWARD_TREND,
+  MSG_TELEMETRY_ADD,
+  MSG_TELEMETRY_NOT_FOUND,
+  MSG_TELEMETRY_LIST,
+  MSG_TELEMETRY_REMOVE,
   MSG_NOMINATION,
   MSG_STATUS_ACTIVE,
   MSG_STATUS_INACTIVE,
@@ -188,7 +230,9 @@ module.exports = {
   MSG_INVALID_ID,
   MSG_ERROR_UNKNOWN,
   MSG_LIST_NULL,
+  MSG_TELEMETRY_LIST_NULL,
   MSG_HELP_ADD,
+  MSG_HELP_TELEMETRY,
   MSG_TREND_NULL,
   MSG_NEW_RELEASE_NOTE
 }

@@ -35,8 +35,18 @@ module.exports = class DatabaseHandler {
           displayParent: String
         },
         active: Boolean,
-        era: Number
+        era: Number,
       }],
+      telemetry: [
+        {
+          channel: String,
+          id: Number,
+          name: String,
+          runtime: String,
+          address: String,
+          isStale: Boolean,
+        }
+      ],
       tg_info: {
         from: {
           id: Number,
@@ -104,8 +114,9 @@ module.exports = class DatabaseHandler {
           },
           identity: identity,
           active: false,
-          era: 0
+          era: 0,
         }],
+        telemetry:[],
         tg_info: {
           from: from,
           chat: chat
@@ -246,5 +257,78 @@ module.exports = class DatabaseHandler {
       'identity.displayParent': parentId
     }).exec();
     return result;
+  }
+
+  async updateTelemetry(from, chat, channel, telemetryNode) {
+    const user = await this.KsmBot.findOne({
+      'tg_info.from.id': from.id,
+      'tg_info.chat.id': chat.id
+    }).exec();
+
+    if (user === null) {
+      const result = await this.KsmBot.create({
+        validators: [],
+        telemetry: [{
+          channel: channel,
+          id: telemetryNode.id,
+          name: telemetryNode.name,
+          runtime: telemetryNode.runtime,
+          address: telemetryNode.address, // could be null
+          isStale: telemetryNode.isStale,
+        }],
+        tg_info: {
+          from: from,
+          chat: chat
+        }
+      });
+    } else {
+      // check if address exists
+      let result = user.telemetry.find((node) => node.id === telemetryNode.id);
+      if (result === undefined) {
+        // insert address
+        result = await this.KsmBot.findOneAndUpdate({
+          'tg_info.from.id': from.id,
+          'tg_info.chat.id': chat.id
+        }, {
+          $push: {telemetry: {
+            channel: channel,
+            id: telemetryNode.id,
+            name: telemetryNode.name,
+            runtime: telemetryNode.runtime,
+            address: telemetryNode.address, // could be null
+            isStale: telemetryNode.isStale,
+          }}
+        })
+      } else {
+        // todo error message
+      }
+    }
+    return true;
+  }
+
+  async getTelemetryNodes(from, chat) {
+    const result = await this.KsmBot.findOne({
+      'tg_info.from.id': from.id,
+      'tg_info.chat.id': chat.id
+    }).exec();
+    if (result === null) {
+      return null;
+    }
+    return result.telemetry;
+  }
+
+  async removeTelemetry(from, chat, name) {
+    const result = await this.KsmBot.findOneAndUpdate({
+      'tg_info.from.id': from.id,
+      'tg_info.chat.id': chat.id
+    },{
+      $pull: {'telemetry': {'name': name}}
+    }).exec();
+
+    if (result === null) {
+      return false;
+    }
+
+    return true;
   }
 }
