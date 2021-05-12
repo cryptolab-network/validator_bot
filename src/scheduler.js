@@ -1,19 +1,23 @@
 const CronJob = require('cron').CronJob;
 const bn = require('bignumber.js');
 const message = require('./message');
+const keys = require('./config/keys');
 
 const KUSAMA_DECIMAL = 1000000000000;
 
 module.exports = class Scheduler {
-  constructor(chaindata, db, notificator) {
+  constructor(chaindata, db, notificator, telemetry, telemetryOfficial) {
     this.db = db;
     this.chaindata = chaindata;
     this.notificator = notificator;
+    this.telemetry = telemetry;
+    this.telemetryOfficial = telemetryOfficial;
      // request chaindata every 5 mins.
      this.job_ = new CronJob('*/5 * * * *', async () => {
       await this.updateValidators();
       await this.collectNominations();
       await this.updateClientStatus();
+      await this.checkTelemetryStatus();
     }, null, true, 'America/Los_Angeles', null, true);
     
   }
@@ -157,6 +161,49 @@ module.exports = class Scheduler {
         console.log(`${validator.address} processing time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
       }
     }
+    console.log(`done`);
+  }
+
+  async checkTelemetryStatus() {
+    console.log(`start to check node status of telemetry`);
+    const startTime = new Date().getTime();
+    const telemetryNodes = Object.keys(this.telemetry.nodes).map((key) => this.telemetry.nodes[key]);
+    const telemetryOfficialNodes = Object.keys(this.telemetryOfficial.nodes).map((key) => this.telemetryOfficial.nodes[key]);
+    const allNodes = await this.db.getTelemetryNodesWithChatId();
+    for (const v of allNodes) {
+      for (const node of v.telemetry) {
+        let isOnline = false;
+        if (node.channel === keys.TELEMETRY_1KV) {
+          for (const n of telemetryNodes) {
+            if (n.name === node.name) {
+              isOnline = true;
+              break;
+            }
+          }
+        }
+        if (node.channel === keys.TELEMETRY_OFFICIAL) {
+          for (const n of telemetryOfficialNodes) {
+            if (n.name === node.name) {
+              isOnline = true;
+              break;
+            }
+          }
+        }
+        if (isOnline !== node.isOnline) {
+          // update status and send notification
+          let resp = '';
+          if (isOnline === true) {
+            resp = message.MSG_TELEMETRY_NODE_ONLINE(node.name);
+          } else {
+            resp = message.MSG_TELEMETRY_NODE_OFFLINE(node.name);
+          }
+          console.log(resp);
+          await this.notificator.send(v.chatId, resp);
+          await this.db.updateTelemetryNode(v._id, node.name, isOnline);
+        }
+      }
+    }
+    console.log(`processing time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
     console.log(`done`);
   }
 }

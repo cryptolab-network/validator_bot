@@ -45,6 +45,7 @@ module.exports = class DatabaseHandler {
           runtime: String,
           address: String,
           isStale: Boolean,
+          isOnline: Boolean
         }
       ],
       tg_info: {
@@ -275,6 +276,7 @@ module.exports = class DatabaseHandler {
           runtime: telemetryNode.runtime,
           address: telemetryNode.address, // could be null
           isStale: telemetryNode.isStale,
+          isOnline: true
         }],
         tg_info: {
           from: from,
@@ -297,6 +299,7 @@ module.exports = class DatabaseHandler {
             runtime: telemetryNode.runtime,
             address: telemetryNode.address, // could be null
             isStale: telemetryNode.isStale,
+            isOnline: true
           }}
         })
       } else {
@@ -332,18 +335,26 @@ module.exports = class DatabaseHandler {
     return true;
   }
 
-  async getTelemetryNodesWithChatId(channel) {
-    const result = await this.KsmBot.find({
-      'telemetry.channel': channel
-    });
+  async getTelemetryNodesWithChatId() {
+    const result = await this.KsmBot.find();
     if (result === null) {
       return null;
     }
     return result.map((item) => {
       return {
+        _id: item._id,
         chatId: item.tg_info.chat.id,
         telemetry: item.telemetry
       }
     })
+  }
+
+  async updateTelemetryNode(_id, name, isOnline) {
+    const result = await this.KsmBot.updateOne({
+      '_id': _id,
+      'telemetry.name': name
+    }, {
+      $set: {'telemetry.$.isOnline': isOnline}
+    });
   }
 }

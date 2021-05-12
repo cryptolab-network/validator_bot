@@ -102,11 +102,11 @@ const MSG_TELEMETRY_REMOVE = (name) => {
 }
 
 const MSG_TELEMETRY_NODE_ONLINE = (name) => {
-  return emoji.emojify(`:smile_cat: Your ${name} node is online.`);
+  return emoji.emojify(`:smile_cat: :smile_cat: :smile_cat: Your node ${name} is online. :surfer: :surfer: :surfer:`);
 }
 
 const MSG_TELEMETRY_NODE_OFFLINE = (name) => {
-  return emoji.emojify(`:warning::warning::warning: Your ${name} node is offline.`);
+  return emoji.emojify(`:warning::warning::warning: Your node ${name} is offline.`);
 }
 
 const MSG_NOMINATION = (validator, oldCount, oldAmount, newCount, newAmount) => {
@@ -211,9 +211,16 @@ const MSG_TREND_NULL = () => {
 
 const MSG_NEW_RELEASE_NOTE = () => {
   return emoji.emojify(`
-  :gift: New feature released! :rocket:
+  :gift::gift::gift: New feature released! :rocket::rocket::rocket:
 
-  - :pizza: /reward command shows weekly reward trend of your validators
+  The bot can monitor the online/offline status of your validator nodes on the following telemetry channels.
+  :one: https://telemetry.w3f.community/#list/Kusama
+  :two: https://telemetry.polkadot.io/#list/Kusama
+  Please note that the node name may be different from your validator identity.
+
+  /telemetry name - :new: add a new node name to your telemetry watchlist
+  /telemetryList - :green_book: list added node name of the telemetry watchlist
+  /telemetryRemove name - :scissors: remove an existing node name of the telemetry watchlist
 
   `)
 }
