@@ -119,7 +119,7 @@ const MSG_NOMINATION = (validator, oldCount, oldAmount, newCount, newAmount) => 
     id = ':white_check_mark: ' + validator.identity.displayParent + '/' + validator.identity.display;
   }
   if (newCount > oldCount){
-    return emoji.emojify(`:tada: Your validator ${id} recevied nomination.
+    return emoji.emojify(`:tada: Your validator ${id} received nomination.
 Nominator count: ${newCount} (:arrow_up_small: ${newCount - oldCount})
 Total amount: ${newAmount} (:arrow_up_small: ${(newAmount - oldAmount).toFixed(2)}) KSM
 `);
@@ -141,7 +141,7 @@ const MSG_STATUS_ACTIVE = (validator, era, total, own, commission) => {
     id = ':white_check_mark: ' + validator.identity.displayParent + '/' + validator.identity.display;
   }
   return emoji.emojify(`
-:mahjong: Your validator ${id} is active at era ${era}.
+:mahjong: Your validator ${id} is active in the era ${era}.
 Total active stake: ${total} KSM.
 Own active stake: ${own} KSM.
 Commission: ${commission}%
@@ -158,7 +158,7 @@ const MSG_STATUS_INACTIVE = (validator, era) => {
     id = ':white_check_mark: ' + validator.identity.displayParent + '/' + validator.identity.display;
   }
   return emoji.emojify(`
-:u7121: Your validator ${id} is inactive at ${era}.
+:u7121: Your validator ${id} is inactive in the era ${era}.
 `);
 }
 
