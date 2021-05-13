@@ -10,6 +10,8 @@ const Telemetry = require('substrate-telemetry-receiver');
 const message = require('./message');
 const Release = require('./release');
 
+let mutexUpdateDb = false;
+
 (async ()=> {
   try {
     const db = new DatabaseHandler();
@@ -88,6 +90,20 @@ const Release = require('./release');
       const chatId = msg.chat.id;
       const input = match[1];
 
+      // a mutex to void race condition
+      const waitUntilFree = async () => {
+        if (mutexUpdateDb) {
+          return new Promise((resolve) => {
+            const intervalId = setInterval(() => {
+              if (!mutexUpdateDb) {
+                clearInterval(intervalId);
+                resolve();
+              }
+            }, 1000);
+          });
+        }
+      };
+
       // Kusama addresses always start with a capital letter like C, D, F, G, H, J...
       let resp = '';
 
@@ -99,7 +115,12 @@ const Release = require('./release');
           display: res.identity.display === undefined ? '' : res.identity.display,
           displayParent: res.identity.displayParent === undefined ? '' : res.identity.displayParent
         }
+
+        await waitUntilFree();
+        mutexUpdateDb = true;
         const result = await db.updateClient(msg.from, msg.chat, input, identity);
+        mutexUpdateDb = false;
+
         if (result === false) {
           resp = message.MSG_ERROR_UNKNOWN();
         } else {
@@ -121,7 +142,12 @@ const Release = require('./release');
               display: result[0].identity.display,
               displayParent: result[0].identity.displayParent === undefined ? '' : result[0].identity.displayParent
             }
+
+            await waitUntilFree();
+            mutexUpdateDb = true;
             result = await db.updateClient(msg.from, msg.chat, address, identity);
+            mutexUpdateDb = false;
+
             if (result === false) {
               resp = message.MSG_ERROR_UNKNOWN();
             } else {
@@ -141,7 +167,12 @@ const Release = require('./release');
               display: result[0].identity.display,
               displayParent: result[0].identity.displayParent === undefined ? '' : result[0].identity.displayParent
             }
+
+            await waitUntilFree();
+            mutexUpdateDb = true;
             result = await db.updateClient(msg.from, msg.chat, address, identity);
+            mutexUpdateDb = false;
+            
             if (result === false) {
               resp = message.MSG_ERROR_UNKNOWN();
             } else {
