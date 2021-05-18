@@ -93,7 +93,12 @@ const MSG_TELEMETRY_NOT_FOUND = (name) => {
 
 const MSG_TELEMETRY_LIST = (nodes) => {
   return nodes.map((node) => {
-    return emoji.emojify(`:eyes: :white_check_mark: ${node.name}`);
+    if (node.isOnline) {
+      return emoji.emojify(`:surfer: :white_check_mark: ${node.name} - online`);
+    } else {
+      return emoji.emojify(`:warning: :white_check_mark: ${node.name} - offline :warning:`);
+    }
+    
   }).join("\n");
 }
 
