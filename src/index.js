@@ -6,7 +6,7 @@ const ApiHandler = require('./ApiHandler');
 const ChainData = require('./ChainData');
 const Scheduler = require('./scheduler');
 const Notification = require('./notification');
-const Telemetry = require('./Telemetry');
+const Telemetry = require('./telemetry');
 const message = require('./message');
 const Release = require('./release');
 
