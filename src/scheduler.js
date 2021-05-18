@@ -18,7 +18,7 @@ module.exports = class Scheduler {
         this.updateValidators(),
         this.collectNominations()
       ])
-      await this.updateClientStatus();
+      this.updateClientStatus();
     }, null, true, 'America/Los_Angeles', null, true);
     // check connection of nodes from telemetry server every 1 min.
     this.telemetryJob_ = new CronJob('*/1 * * * *', async () => {
