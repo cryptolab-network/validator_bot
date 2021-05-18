@@ -3,8 +3,6 @@ const bn = require('bignumber.js');
 const message = require('./message');
 const keys = require('./config/keys');
 
-const KUSAMA_DECIMAL = 1000000000000;
-
 module.exports = class Scheduler {
   constructor(chaindata, db, notificator, telemetry, telemetryOfficial) {
     this.db = db;
@@ -111,13 +109,13 @@ module.exports = class Scheduler {
           count++;
           amount = amount.plus(new bn(n.balance.lockedBalance));
         }
-        console.log(`count: ${count}, amount: ${amount.div(new bn(KUSAMA_DECIMAL)).toNumber()}`);
+        console.log(`count: ${count}, amount: ${amount.div(new bn(keys.CHAIN_DECIMAL)).toNumber()}`);
 
         if (count !== validator.nomination.count) {
           // update db
           await this.db.updateNomination(client._id, validator.address, count, amount.toNumber());
           // send notification
-          const resp = message.MSG_NOMINATION(validator, validator.nomination.count, (validator.nomination.amount/KUSAMA_DECIMAL).toFixed(2), count, amount.div(new bn(KUSAMA_DECIMAL)).toNumber().toFixed(2));
+          const resp = message.MSG_NOMINATION(validator, validator.nomination.count, (validator.nomination.amount/keys.CHAIN_DECIMAL).toFixed(2), count, amount.div(new bn(keys.CHAIN_DECIMAL)).toNumber().toFixed(2));
           await this.notificator.send(client.tg_info.chat.id, resp);
           console.log(resp);
         }
@@ -155,8 +153,8 @@ module.exports = class Scheduler {
             console.log(status.stakingInfo.validatorPrefs.commission);
             await this.db.updateActive(validator._id, validator.address, status.activeEra, true);
             const resp = message.MSG_STATUS_ACTIVE(validator, status.activeEra, 
-              (status.stakingInfo.exposure.total.div(new bn(KUSAMA_DECIMAL))).toFixed(2).toString(), 
-              (status.stakingInfo.exposure.own/KUSAMA_DECIMAL).toFixed(2), 
+              (status.stakingInfo.exposure.total.div(new bn(keys.CHAIN_DECIMAL))).toFixed(2).toString(), 
+              (status.stakingInfo.exposure.own/keys.CHAIN_DECIMAL).toFixed(2), 
               (status.stakingInfo.validatorPrefs.commission === 1) ? 0 : status.stakingInfo.validatorPrefs.commission/10000000
             );
             console.log(resp);

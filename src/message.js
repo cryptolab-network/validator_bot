@@ -1,4 +1,5 @@
 const emoji = require('node-emoji');
+const keys = require('./config/keys');
 
 const MSG_START = () => {
   return emoji.emojify(`
@@ -168,7 +169,7 @@ const MSG_STATUS_INACTIVE = (validator, era) => {
 }
 
 const MSG_INVALID_ADDR = () => {
-  return emoji.emojify(`:no_entry_sign: Invalid Kusama address`);
+  return emoji.emojify(`:no_entry_sign: Invalid ${keys.CHAIN} address`);
 }
 
 const MSG_INVALID_ID_NOT_FOUND = () => {
@@ -219,8 +220,8 @@ const MSG_NEW_RELEASE_NOTE = () => {
   :gift::gift::gift: New feature released! :rocket::rocket::rocket:
 
   The bot can monitor the online/offline status of your validator nodes on the following telemetry channels.
-  :one: https://telemetry.w3f.community/#list/Kusama
-  :two: https://telemetry.polkadot.io/#list/Kusama
+  :one: https://telemetry.w3f.community/#list/${keys.CHAIN}
+  :two: https://telemetry.polkadot.io/#list/${keys.CHAIN}
   Please note that the node name may be different from your validator identity.
 
   /telemetry name - :new: add a new node name to your telemetry watchlist

@@ -20,6 +20,7 @@ async function sleep(ms) {
 
 (async ()=> {
   try {
+    console.log(typeof keys.CHAIN_DECIMAL);
     const db = new DatabaseHandler();
     db.connect(keys.MONGO_ACCOUNT, keys.MONGO_PASSWORD, keys.MONGO_URL, keys.MONGO_PORT, keys.MONGO_DBNAME);
     const handler = await ApiHandler.create(keys.KUSAMA_WSS);
@@ -28,8 +29,8 @@ async function sleep(ms) {
     // Create a bot that uses 'polling' to fetch new updates
     const bot = new TelegramBot(token, {polling: true});
     const notification = new Notification(bot);
-    const telemetry = new Telemetry(keys.TELEMETRY_1KV, db, 'Kusama');
-    const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, db, 'Kusama');
+    const telemetry = new Telemetry(keys.TELEMETRY_1KV, db, keys.CHAIN);
+    const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, db, keys.CHAIN);
     
     telemetry.start();
     telemetryOfficial.start();
