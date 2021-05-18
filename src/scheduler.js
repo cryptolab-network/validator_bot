@@ -173,7 +173,7 @@ module.exports = class Scheduler {
     console.log(`start to check node status of telemetry`);
     const startTime = new Date().getTime();
     const telemetryNodes = Object.keys(this.telemetry.nodes).map((key) => this.telemetry.nodes[key]);
-    // const telemetryOfficialNodes = Object.keys(this.telemetryOfficial.nodes).map((key) => this.telemetryOfficial.nodes[key]);
+    const telemetryOfficialNodes = Object.keys(this.telemetryOfficial.nodes).map((key) => this.telemetryOfficial.nodes[key]);
     const allNodes = await this.db.getTelemetryNodesWithChatId();
     for (const v of allNodes) {
       for (const node of v.telemetry) {
