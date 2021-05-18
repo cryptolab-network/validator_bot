@@ -12,19 +12,24 @@ module.exports = class Scheduler {
     this.notificator = notificator;
     this.telemetry = telemetry;
     this.telemetryOfficial = telemetryOfficial;
-     // request chaindata every 5 mins.
-     this.job_ = new CronJob('*/5 * * * *', async () => {
-      await this.updateValidators();
-      await this.collectNominations();
+    // request chaindata every 5 mins.
+    this.job_ = new CronJob('*/5 * * * *', async () => {
+      await Promise.all([
+        this.updateValidators(),
+        this.collectNominations()
+      ])
       await this.updateClientStatus();
+    }, null, true, 'America/Los_Angeles', null, true);
+    // check connection of nodes from telemetry server every 1 min.
+    this.telemetryJob_ = new CronJob('*/1 * * * *', async () => {
       await this.checkTelemetryStatus();
     }, null, true, 'America/Los_Angeles', null, true);
-    
   }
 
   start() {
     console.log('start cronjob');
     this.job_.start();
+    this.telemetryJob_.start();
   }
 
   async updateValidators() {
@@ -168,7 +173,7 @@ module.exports = class Scheduler {
     console.log(`start to check node status of telemetry`);
     const startTime = new Date().getTime();
     const telemetryNodes = Object.keys(this.telemetry.nodes).map((key) => this.telemetry.nodes[key]);
-    const telemetryOfficialNodes = Object.keys(this.telemetryOfficial.nodes).map((key) => this.telemetryOfficial.nodes[key]);
+    // const telemetryOfficialNodes = Object.keys(this.telemetryOfficial.nodes).map((key) => this.telemetryOfficial.nodes[key]);
     const allNodes = await this.db.getTelemetryNodesWithChatId();
     for (const v of allNodes) {
       for (const node of v.telemetry) {

@@ -6,11 +6,17 @@ const ApiHandler = require('./ApiHandler');
 const ChainData = require('./ChainData');
 const Scheduler = require('./scheduler');
 const Notification = require('./notification');
-const Telemetry = require('substrate-telemetry-receiver');
+const Telemetry = require('./Telemetry');
 const message = require('./message');
 const Release = require('./release');
 
 let mutexUpdateDb = false;
+
+async function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  })
+}
 
 (async ()=> {
   try {
@@ -22,55 +28,14 @@ let mutexUpdateDb = false;
     // Create a bot that uses 'polling' to fetch new updates
     const bot = new TelegramBot(token, {polling: true});
     const notification = new Notification(bot);
-    const telemetry = new Telemetry(keys.TELEMETRY_1KV, 'Kusama');
-    const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, 'Kusama');
+    const telemetry = new Telemetry(keys.TELEMETRY_1KV, db, 'Kusama');
+    const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, db, 'Kusama');
     
-    await telemetry.connect();
-    await telemetryOfficial.connect();
+    telemetry.start();
+    telemetryOfficial.start();
 
-    telemetry.on('node_online', async (nodeName) => {
-      // console.log(`1kv`);
-      // console.log(`====================== ${nodeName} is online`);
-    });
-
-    telemetry.on('node_offline', async (nodeName) => {
-      // console.log(`1kv`);
-      // console.log(`${nodeName} is offline`);
-    });
-
-    telemetry.on('close', () => {
-      setTimeout(() => {
-        telemetry.connect();
-      }, 5000);
-    });
-
-    telemetry.on('error', (err) => {
-      console.log(`1kv`);
-      console.error(err);
-    });
-
-    telemetryOfficial.on('node_online', async (nodeName) => {
-      // console.log(`official`);
-      // console.log(`${nodeName} is online`);
-    });
-
-    telemetryOfficial.on('node_offline', async (nodeName) => {
-      // console.log(`official`);
-      // console.log(`${nodeName} is offline`);
-    });
-
-    telemetryOfficial.on('close', () => {
-      console.log(`official`);
-      setTimeout(() => {
-        telemetryOfficial.connect();
-      }, 5000);
-    });
-
-    telemetryOfficial.on('error', (err) => {
-      console.log(`official`);
-      console.error(err);
-    });
-
+    // await 15 seconds to initial telemetry nodes
+    await sleep(15000);
     const polling = new Scheduler(chainData, db, notification, telemetry, telemetryOfficial);
     polling.start();
 
@@ -172,7 +137,7 @@ let mutexUpdateDb = false;
             mutexUpdateDb = true;
             result = await db.updateClient(msg.from, msg.chat, address, identity);
             mutexUpdateDb = false;
-            
+
             if (result === false) {
               resp = message.MSG_ERROR_UNKNOWN();
             } else {
