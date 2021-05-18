@@ -34,8 +34,8 @@ async function sleep(ms) {
     telemetry.start();
     telemetryOfficial.start();
 
-    // await 15 seconds to initial telemetry nodes
-    await sleep(15000);
+    // await 30 seconds to initial telemetry nodes
+    await sleep(30000);
     const polling = new Scheduler(chainData, db, notification, telemetry, telemetryOfficial);
     polling.start();
 
