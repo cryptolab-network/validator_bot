@@ -1,11 +1,13 @@
 const TelegramBot = require('node-telegram-bot-api');
-const { isValidAddressKusama } = require('./utility');
+const { isValidAddress } = require('./utility');
 const message = require('./message');
 
 let mutexUpdateDb = false;
 module.exports = class Telegram {
-  constructor(token, db, telemetry, telemetryUrl, telemetryOfficial, telemetryOfficialUrl) {
+  constructor(token, db, chainData, chain, telemetry, telemetryUrl, telemetryOfficial, telemetryOfficialUrl) {
     this.db = db;
+    this.chainData = chainData;
+    this.chain = chain
     this.telemetry = telemetry;
     this.TELEMETRY_1KV = telemetryUrl;
     this.telemetryOfficial = telemetryOfficial;
@@ -27,34 +29,18 @@ module.exports = class Telegram {
     this.bot.onText(/\/add (.+)/, async (msg, match) => {
       const chatId = msg.chat.id;
       const input = match[1];
-
-      // a mutex to void race condition
-      const waitUntilFree = async () => {
-        if (mutexUpdateDb) {
-          return new Promise((resolve) => {
-            const intervalId = setInterval(() => {
-              if (!mutexUpdateDb) {
-                clearInterval(intervalId);
-                resolve();
-              }
-            }, 1000);
-          });
-        }
-      };
-
-      // Kusama addresses always start with a capital letter like C, D, F, G, H, J...
       let resp = '';
 
       // check input type: address or identity
-      if (input.length === 47 && input.match(/[C-Z].+/)?.index === 0 && isValidAddressKusama(input)) {
+      if (isValidAddress(input, this.chain)) {
         // input is an address
-        const res = await chainData.getIdentity(input);
+        const res = await this.chainData.getIdentity(input);
         const identity = {
           display: res.identity.display === undefined ? '' : res.identity.display,
           displayParent: res.identity.displayParent === undefined ? '' : res.identity.displayParent
         }
 
-        await waitUntilFree();
+        await this._waitUntilFree();
         mutexUpdateDb = true;
         const result = await this.db.updateClient(msg.from, msg.chat, input, identity);
         mutexUpdateDb = false;
@@ -81,7 +67,7 @@ module.exports = class Telegram {
               displayParent: result[0].identity.displayParent === undefined ? '' : result[0].identity.displayParent
             }
 
-            await waitUntilFree();
+            await this._waitUntilFree();
             mutexUpdateDb = true;
             result = await this.db.updateClient(msg.from, msg.chat, address, identity);
             mutexUpdateDb = false;
@@ -106,7 +92,7 @@ module.exports = class Telegram {
               displayParent: result[0].identity.displayParent === undefined ? '' : result[0].identity.displayParent
             }
 
-            await waitUntilFree();
+            await this._waitUntilFree();
             mutexUpdateDb = true;
             result = await this.db.updateClient(msg.from, msg.chat, address, identity);
             mutexUpdateDb = false;
@@ -128,8 +114,7 @@ module.exports = class Telegram {
       const chatId = msg.chat.id;
       const address = match[1];
 
-      // Kusama addresses always start with a capital letter like C, D, F, G, H, J...
-      if (address.match(/[C-Z].+/)?.index !== 0 && !isValidAddressKusama(address)) {
+      if (isValidAddress(input, this.chain) === false) {
         this.bot.sendMessage(chatId, message.MSG_INVALID_ADDR());
         return;
       } 
@@ -281,4 +266,19 @@ module.exports = class Telegram {
       console.log(msg);
     });
   }
+
+  // a mutex to void race condition
+  async _waitUntilFree() {
+    if (mutexUpdateDb) {
+      return new Promise((resolve) => {
+        const intervalId = setInterval(() => {
+          if (!mutexUpdateDb) {
+            clearInterval(intervalId);
+            resolve();
+          }
+        }, 1000);
+      });
+    }
+  };
+
 }

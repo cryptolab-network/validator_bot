@@ -1,5 +1,3 @@
-const KUSAMA_APPROX_ERA_LENGTH_IN_BLOCKS = 3600;
-
 module.exports = class ChainData {
   
   constructor(handler) {

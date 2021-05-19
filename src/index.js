@@ -20,7 +20,7 @@ const main = async () => {
     const db = new DatabaseHandler();
     db.connect(keys.MONGO_ACCOUNT, keys.MONGO_PASSWORD, keys.MONGO_URL, keys.MONGO_PORT, keys.MONGO_DBNAME);
 
-    const handler = await ApiHandler.create(keys.KUSAMA_WSS);
+    const handler = await ApiHandler.create(keys.API_WSS);
     const chainData = new ChainData(handler);
 
     const telemetry = new Telemetry(keys.TELEMETRY_1KV, db, keys.CHAIN);
@@ -28,7 +28,7 @@ const main = async () => {
 
     const token = keys.TG_TOKEN;
     // Create a bot that uses 'polling' to fetch new updates
-    const telegram = new Telegram(token, db, telemetry, keys.TELEMETRY_1KV, telemetryOfficial, keys.TELEMETRY_OFFICIAL);
+    const telegram = new Telegram(token, db, chainData, keys.CHAIN, telemetry, keys.TELEMETRY_1KV, telemetryOfficial, keys.TELEMETRY_OFFICIAL);
     const notification = new Notification(telegram.bot);
     
     telegram.start();

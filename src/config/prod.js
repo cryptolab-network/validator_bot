@@ -1,7 +1,7 @@
 module.exports = {
   PORT: process.env.PORT,
-  KUSAMA_WSS: process.env.KUSAMA_WSS,
-  POLKADOT_WSS: process.env.POLKADOT_WSS,
+  API_WSS: process.env.API_WSS,
+  // POLKADOT_WSS: process.env.POLKADOT_WSS,
   TG_TOKEN: process.env.TG_TOKEN,
   MONGO_ACCOUNT: process.env.MONGO_ACCOUNT,
   MONGO_PASSWORD: process.env.MONGO_PASSWORD,
