@@ -10,8 +10,8 @@ module.exports = class Scheduler {
     this.notificator = notificator;
     this.telemetry = telemetry;
     this.telemetryOfficial = telemetryOfficial;
-    // request chaindata every 5 mins.
-    this.job_ = new CronJob('*/5 * * * *', async () => {
+    // request chaindata every 30 mins.
+    this.job_ = new CronJob('*/30 * * * *', async () => {
       await Promise.all([
         this.updateValidators(),
         this.collectNominations()
@@ -20,7 +20,7 @@ module.exports = class Scheduler {
     }, null, true, 'America/Los_Angeles', null, true);
     // check connection of nodes from telemetry server every 1 min.
     this.telemetryJob_ = new CronJob('*/1 * * * *', async () => {
-      await this.checkTelemetryStatus();
+      this.checkTelemetryStatus();
     }, null, true, 'America/Los_Angeles', null, true);
   }
 
@@ -34,7 +34,7 @@ module.exports = class Scheduler {
     console.log(`start to update validators...`);
     let startTime = new Date().getTime();
     const data = await this.chaindata.getAllValidators();
-    console.log(`data collection time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
+    console.log(`data collection time (updateValidators): ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
     startTime = new Date().getTime();
     const allValidators = data.map((v) => {
       let validator = {};
@@ -65,8 +65,7 @@ module.exports = class Scheduler {
       return validator;
     });
     await this.db.updateValidators(allValidators);
-    console.log(`data process time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
-    console.log('done');
+    console.log(`data process time (updateValidators): ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
   }
 
   async collectNominations() {
@@ -74,7 +73,7 @@ module.exports = class Scheduler {
     let startTime = new Date().getTime();
     const nominations = await this.chaindata.getAllNominations();
     
-    console.log(`data collection time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
+    console.log(`data collection time (collectNominations): ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
     startTime = new Date().getTime();
 
     let nominators = [];
@@ -121,7 +120,7 @@ module.exports = class Scheduler {
         }
       }
     }
-    console.log(`data processing time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`)
+    console.log(`data processing time (collectNominations): ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`)
   }
 
   async updateClientStatus() {
@@ -164,7 +163,7 @@ module.exports = class Scheduler {
         console.log(`${validator.address} processing time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
       }
     }
-    console.log(`done`);
+    console.log(`updateClientStatus done`);
   }
 
   async checkTelemetryStatus() {
@@ -206,7 +205,6 @@ module.exports = class Scheduler {
         }
       }
     }
-    console.log(`processing time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
-    console.log(`done`);
+    console.log(`processing time (checkTelemetryStatus): ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
   }
 }
