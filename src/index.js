@@ -10,8 +10,6 @@ const Telemetry = require('./telemetry');
 const message = require('./message');
 const Release = require('./release');
 
-let mutexUpdateDb = false;
-
 async function sleep(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
