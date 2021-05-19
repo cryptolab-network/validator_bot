@@ -1,5 +1,4 @@
 const keys = require('./config/keys');
-const { isValidAddressKusama } = require('./utility');
 const DatabaseHandler = require('./db/DatabaseHandler');
 const ApiHandler = require('./ApiHandler');
 const ChainData = require('./ChainData');
@@ -24,15 +23,15 @@ const main = async () => {
     const handler = await ApiHandler.create(keys.KUSAMA_WSS);
     const chainData = new ChainData(handler);
 
-    const token = keys.TG_TOKEN;
-    // Create a bot that uses 'polling' to fetch new updates
-    const bot = new Telegram(token, db);
-    const notification = new Notification(bot);
-
     const telemetry = new Telemetry(keys.TELEMETRY_1KV, db, keys.CHAIN);
     const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, db, keys.CHAIN);
+
+    const token = keys.TG_TOKEN;
+    // Create a bot that uses 'polling' to fetch new updates
+    const telegram = new Telegram(token, db, telemetry, keys.TELEMETRY_1KV, telemetryOfficial, keys.TELEMETRY_OFFICIAL);
+    const notification = new Notification(telegram.bot);
     
-    bot.start();
+    telegram.start();
 
     telemetry.start();
     telemetryOfficial.start();

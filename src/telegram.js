@@ -1,9 +1,15 @@
 const TelegramBot = require('node-telegram-bot-api');
+const { isValidAddressKusama } = require('./utility');
 const message = require('./message');
 
+let mutexUpdateDb = false;
 module.exports = class Telegram {
-  constructor(token, db) {
+  constructor(token, db, telemetry, telemetryUrl, telemetryOfficial, telemetryOfficialUrl) {
     this.db = db;
+    this.telemetry = telemetry;
+    this.TELEMETRY_1KV = telemetryUrl;
+    this.telemetryOfficial = telemetryOfficial;
+    this.TELEMETRY_OFFICIAL = telemetryOfficialUrl;
     // Create a bot that uses 'polling' to fetch new updates
     this.bot = new TelegramBot(token, {polling: true});
   }
@@ -187,29 +193,30 @@ module.exports = class Telegram {
       let isFound = false;
       let channel = '';
       let node = {};
-      console.log(telemetry.nodes.length);
-      console.log(typeof telemetry.nodes);
+      let resp = '';
+      console.log(this.telemetry.nodes.length);
+      console.log(typeof this.telemetry.nodes);
 
-      for (const key of Object.keys(telemetry.nodes)) {
-        if (telemetry.nodes[key].name === name) {
+      for (const key of Object.keys(this.telemetry.nodes)) {
+        if (this.telemetry.nodes[key].name === name) {
           isFound = true;
-          channel = keys.TELEMETRY_1KV;
-          node = telemetry.nodes[key];
+          channel = this.TELEMETRY_1KV;
+          node = this.telemetry.nodes[key];
           console.log(`found!`);
-          console.log(telemetry.nodes[key]);
+          console.log(this.telemetry.nodes[key]);
         }
       }
       if (isFound === false) {
-        for (const key of Object.keys(telemetryOfficial.nodes)) {
-          if (telemetryOfficial.nodes[key].name === name) {
+        for (const key of Object.keys(this.telemetryOfficial.nodes)) {
+          if (this.telemetryOfficial.nodes[key].name === name) {
             isFound = true;
-            channel = keys.TELEMETRY_OFFICIAL;
-            node = telemetryOfficial.nodes[key];
+            channel = this.TELEMETRY_OFFICIAL;
+            node = this.telemetryOfficial.nodes[key];
             console.log(`found!`);
-            console.log(telemetryOfficial.nodes[key]);
+            console.log(this.telemetryOfficial.nodes[key]);
           }
         }
-        console.log(telemetryOfficial.nodes.length);
+        console.log(this.telemetryOfficial.nodes.length);
       }
 
       if (isFound === true) {
