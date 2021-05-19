@@ -47,6 +47,7 @@ module.exports = class Telemetry {
       this.connection.onopen = () => {
         console.log(`connected to telemetry: ${this.url}`);
         this.connection.send(`subscribe:${this.chain}`);
+        resolve();
       };
 
       this.connection.onclose = () => {
