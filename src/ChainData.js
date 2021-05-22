@@ -5,6 +5,7 @@ module.exports = class ChainData {
   }
   
   getAllNominations = async () => {
+    console.time('chain :: getAllNominations');
     const api = await this.handler.getApi();
     let nominators = await api.query.staking.nominators.entries();
 
@@ -39,19 +40,22 @@ module.exports = class ChainData {
         balance
       }
     })
-
+    console.timeEnd('chain :: getAllNominations');
     return nominations;
   }
 
   getIdentity = async (address) => {
+    console.time('chain :: getIdentity');
     const api = await this.handler.getApi();
     const identity = await api.derive.accounts.info(address);
-    console.log('identity');
-    console.log(JSON.stringify(identity, undefined, 1));
+    // console.log('identity');
+    // console.log(JSON.stringify(identity, undefined, 1));
+    console.timeEnd('chain :: getIdentity');
     return identity;
   }
 
   getAllValidators = async (address) => {
+    console.time('chain :: getAllValidators');
     const api = await this.handler.getApi();
 
     let validators = [];
@@ -102,10 +106,12 @@ module.exports = class ChainData {
         })
       )
     )
+    console.timeEnd('chain :: getAllValidators');
     return validators.concat(intentions);
   }
 
   queryStaking = async (address) => {
+    console.time('chain :: queryStaking');
     try {
       const api = await this.handler.getApi();
       const [activeEra, stakingInfo] = await Promise.all([
@@ -118,6 +124,7 @@ module.exports = class ChainData {
           withPrefs: true,
         })
       ]);
+      console.timeEnd('chain :: queryStaking')
       return {
         activeEra: activeEra.unwrap().index.toNumber(),
         stakingInfo: {

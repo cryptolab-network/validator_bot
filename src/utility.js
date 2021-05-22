@@ -8,7 +8,7 @@ const isValidAddress = (address, chain) => {
         ? hexToU8a(address)
         : decodeAddress(address)
     );
-      console.log(`address = ${address}`);
+      // console.log(`address = ${address}`);
     if (chain === 'Kusama' && isKusamaAddress(address)) {
       return true;
     }

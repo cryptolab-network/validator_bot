@@ -51,6 +51,23 @@ const main = async () => {
 
 main();
 
+// program
+//   .version('0.1.0')
+//   .option('-r, --role <role>', 'choose a role to execute this program, ex., bot or collector')
+//   .parse(process.argv)
+
+// console.log(program.opts().role);
+
+
+// if (program.opts().role === 'bot'){
+//   console.log(`bot`);
+//   runBot();
+// } else if (program.opts().role === 'collector') {
+//   console.log(`collector`);
+//   runCollector();
+// } else {
+//   console.log(`help`)
+// }
 
 
 

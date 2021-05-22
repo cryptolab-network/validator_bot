@@ -10,17 +10,28 @@ module.exports = class Scheduler {
     this.notificator = notificator;
     this.telemetry = telemetry;
     this.telemetryOfficial = telemetryOfficial;
-    // request chaindata every 30 mins.
-    this.job_ = new CronJob('*/30 * * * *', async () => {
-      await Promise.all([
-        this.updateValidators(),
-        this.collectNominations()
-      ])
-      this.updateClientStatus();
+    this.collecting = false;
+    this.checking = false;
+    // request chaindata every 10 mins.
+    this.job_ = new CronJob('*/10 * * * *', async () => {
+      if (!this.collecting) {
+        this.collecting = true;
+        await Promise.all([
+          await this.updateValidators(),
+          await this.collectNominations()
+        ])
+        await this.updateClientStatus();
+        this.collecting = false;
+      }
     }, null, true, 'America/Los_Angeles', null, true);
     // check connection of nodes from telemetry server every 1 min.
     this.telemetryJob_ = new CronJob('*/1 * * * *', async () => {
-      this.checkTelemetryStatus();
+      if (!this.checking) {
+        this.checking = true;
+        await this.checkTelemetryStatus();
+        await this.checkNotification();
+        this.checking = false;
+      }
     }, null, true, 'America/Los_Angeles', null, true);
   }
 
@@ -31,11 +42,8 @@ module.exports = class Scheduler {
   }
 
   async updateValidators() {
-    console.log(`start to update validators...`);
-    let startTime = new Date().getTime();
+    console.time('scheduler :: updateValidators');
     const data = await this.chaindata.getAllValidators();
-    console.log(`data collection time (updateValidators): ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
-    startTime = new Date().getTime();
     const allValidators = data.map((v) => {
       let validator = {};
       validator.stashId = v.stashId.toString();
@@ -65,16 +73,12 @@ module.exports = class Scheduler {
       return validator;
     });
     await this.db.updateValidators(allValidators);
-    console.log(`data process time (updateValidators): ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
+    console.timeEnd('scheduler :: updateValidators');
   }
 
   async collectNominations() {
-    console.log(`start to collect nominations...`);
-    let startTime = new Date().getTime();
+    console.time('scheduler :: collectNominations');
     const nominations = await this.chaindata.getAllNominations();
-    
-    console.log(`data collection time (collectNominations): ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
-    startTime = new Date().getTime();
 
     let nominators = [];
     for(let i=0; i < nominations.length; i++) {
@@ -108,23 +112,23 @@ module.exports = class Scheduler {
           count++;
           amount = amount.plus(new bn(n.balance.lockedBalance));
         }
-        console.log(`count: ${count}, amount: ${amount.div(new bn(keys.CHAIN_DECIMAL)).toNumber()}`);
+        // console.log(`count: ${count}, amount: ${amount.div(new bn(keys.CHAIN_DECIMAL)).toNumber()}`);
 
         if (count !== validator.nomination.count) {
           // update db
           await this.db.updateNomination(client._id, validator.address, count, amount.toNumber());
           // send notification
           const resp = message.MSG_NOMINATION(validator, validator.nomination.count, (validator.nomination.amount/keys.CHAIN_DECIMAL).toFixed(2), count, amount.div(new bn(keys.CHAIN_DECIMAL)).toNumber().toFixed(2));
-          await this.notificator.send(client.tg_info.chat.id, resp);
+          await this.db.createNootification(client.tg_info.chat.id, resp);
           console.log(resp);
         }
       }
     }
-    console.log(`data processing time (collectNominations): ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`)
+    console.timeEnd('scheduler :: collectNominations');
   }
 
   async updateClientStatus() {
-    console.log(`start to update client status...`);
+    console.time('scheduler :: updateClientStatus');
     const clients = await this.db.getAllClients();
 
     for (const client of clients) {
@@ -133,7 +137,7 @@ module.exports = class Scheduler {
         const clientValidator = await this.db.getClientValidator(client.tg_info.from, client.tg_info.chat, validator.address);
         const status = await this.chaindata.queryStaking(validator.address);
         if (status === null) {
-          console.log(JSON.stringify(validator, undefined, 1));
+          // console.log(JSON.stringify(validator, undefined, 1));
           continue;
         }
         // handle big number
@@ -144,12 +148,12 @@ module.exports = class Scheduler {
             await this.db.updateActive(validator._id, validator.address, status.activeEra, false);  
             const resp = message.MSG_STATUS_INACTIVE(validator, status.activeEra);
             console.log(resp);
-            await this.notificator.send(client.tg_info.chat.id, resp);
+            await this.db.createNootification(client.tg_info.chat.id, resp);
           }
         } else {
           // active
           if (clientValidator.era !== status.activeEra || clientValidator.active !== true) {
-            console.log(status.stakingInfo.validatorPrefs.commission);
+            // console.log(status.stakingInfo.validatorPrefs.commission);
             await this.db.updateActive(validator._id, validator.address, status.activeEra, true);
             const resp = message.MSG_STATUS_ACTIVE(validator, status.activeEra, 
               (status.stakingInfo.exposure.total.div(new bn(keys.CHAIN_DECIMAL))).toFixed(2).toString(), 
@@ -157,18 +161,17 @@ module.exports = class Scheduler {
               (status.stakingInfo.validatorPrefs.commission === 1) ? 0 : status.stakingInfo.validatorPrefs.commission/10000000
             );
             console.log(resp);
-            await this.notificator.send(client.tg_info.chat.id, resp);
+            await this.db.createNootification(client.tg_info.chat.id, resp);
           }
         }
         console.log(`${validator.address} processing time: ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
       }
     }
-    console.log(`updateClientStatus done`);
+    console.timeEnd('scheduler :: updateClientStatus');
   }
 
   async checkTelemetryStatus() {
-    console.log(`start to check node status of telemetry`);
-    const startTime = new Date().getTime();
+    console.time('scheduler :: checkTelemetryStatus');
     const telemetryNodes = Object.keys(this.telemetry.nodes).map((key) => this.telemetry.nodes[key]);
     const telemetryOfficialNodes = Object.keys(this.telemetryOfficial.nodes).map((key) => this.telemetryOfficial.nodes[key]);
     const allNodes = await this.db.getTelemetryNodesWithChatId();
@@ -205,6 +208,18 @@ module.exports = class Scheduler {
         }
       }
     }
-    console.log(`processing time (checkTelemetryStatus): ${((new Date().getTime() - startTime) / 1000).toFixed(3)}s`);
+    console.timeEnd('scheduler :: checkTelemetryStatus');
+  }
+
+  async checkNotification() {
+    console.time('scheduler :: checkTelemetryStatus');
+    const unsent = await this.db.getUnsentNotification();
+    if (unsent !== null) {
+      for (let n of unsent) {
+        await this.notificator.send(n.chatId, n.message);
+        await this.db.updateNotificationToSent(n._id);
+      }
+    }
+    console.timeEnd('scheduler :: checkTelemetryStatus');
   }
 }

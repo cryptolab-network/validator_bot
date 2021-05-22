@@ -114,7 +114,7 @@ module.exports = class Telegram {
       const chatId = msg.chat.id;
       const address = match[1];
 
-      if (isValidAddress(input, this.chain) === false) {
+      if (isValidAddress(address, this.chain) === false) {
         this.bot.sendMessage(chatId, message.MSG_INVALID_ADDR());
         return;
       } 
@@ -179,16 +179,16 @@ module.exports = class Telegram {
       let channel = '';
       let node = {};
       let resp = '';
-      console.log(this.telemetry.nodes.length);
-      console.log(typeof this.telemetry.nodes);
+      // console.log(this.telemetry.nodes.length);
+      // console.log(typeof this.telemetry.nodes);
 
       for (const key of Object.keys(this.telemetry.nodes)) {
         if (this.telemetry.nodes[key].name === name) {
           isFound = true;
           channel = this.TELEMETRY_1KV;
           node = this.telemetry.nodes[key];
-          console.log(`found!`);
-          console.log(this.telemetry.nodes[key]);
+          // console.log(`found!`);
+          // console.log(this.telemetry.nodes[key]);
         }
       }
       if (isFound === false) {
@@ -197,11 +197,11 @@ module.exports = class Telegram {
             isFound = true;
             channel = this.TELEMETRY_OFFICIAL;
             node = this.telemetryOfficial.nodes[key];
-            console.log(`found!`);
-            console.log(this.telemetryOfficial.nodes[key]);
+            // console.log(`found!`);
+            // console.log(this.telemetryOfficial.nodes[key]);
           }
         }
-        console.log(this.telemetryOfficial.nodes.length);
+        // console.log(this.telemetryOfficial.nodes.length);
       }
 
       if (isFound === true) {
@@ -214,7 +214,7 @@ module.exports = class Telegram {
           resp = message.MSG_TELEMETRY_ADD(node);
         }
       } else {
-        console.log(`found nothing`);
+        // console.log(`found nothing`);
         resp = message.MSG_TELEMETRY_NOT_FOUND(name);
       }
       this.bot.sendMessage(msg.chat.id, resp);

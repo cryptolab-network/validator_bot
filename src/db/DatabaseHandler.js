@@ -10,6 +10,7 @@ module.exports = class DatabaseHandler {
     const self = this;
     this.KsmBot = mongoose.model('KsmBot', this.ksmbotSchema_);
     this.Validator = mongoose.model('Validator', this.validatorsSchema_);
+    this.Notification = mongoose.model('bot_notification', this.notificationSchema_);
     mongoose.connect(`mongodb://${name}:${pass}@${ip}:${port}/${dbName}`, {
       useNewUrlParser: true, 
       useUnifiedTopology: true,
@@ -72,31 +73,40 @@ module.exports = class DatabaseHandler {
     });
 
     this.validatorsSchema_ = new Schema({
-        stashId: String,
-        controllerId: String,
-        exposure: {
-          total: String,
-          own: Number,
-          others: [{
-            who: String,
-            value: Number
-          }]
-        },
-        validatorPrefs: {
-          commission: Number,
-          blocked: Boolean
-        },
-        identity: {
-          display: String,
-          displayParent: String,
+      stashId: String,
+      controllerId: String,
+      exposure: {
+        total: String,
+        own: Number,
+        others: [{
+          who: String,
+          value: Number
+        }]
+      },
+      validatorPrefs: {
+        commission: Number,
+        blocked: Boolean
+      },
+      identity: {
+        display: String,
+        displayParent: String,
 
-        },
-        active: Boolean
+      },
+      active: Boolean
     }, {
       typeKey: '$type',
       collection: 'bot_validators',
       timestamps: {}
-    })
+    });
+
+    this.notificationSchema_ = new Schema({
+      chatId: Number,
+      message: String,
+      sent: Boolean
+    }, {
+      collection: 'bot_notification',
+      timestamps: {}
+    });
   }
 
   async updateClient(from, chat, address, identity) {
@@ -356,5 +366,43 @@ module.exports = class DatabaseHandler {
     }, {
       $set: {'telemetry.$.isOnline': isOnline}
     });
+  }
+  
+  async createNootification(chatId, message) {
+    try {
+      await this.Notification.create({
+        chatId,
+        message,
+        sent: false
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async getUnsentNotification() {
+    try {
+      const doc = await this.Notification.find({
+        sent: false
+      }).exec();
+      return doc;
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
+  async updateNotificationToSent(_id) {
+    try {
+      await this.Notification.findOneAndUpdate({
+        '_id': _id
+      }, {
+        $set: {
+          sent: true
+        }
+      })
+    } catch (err) {
+
+    }
   }
 }
