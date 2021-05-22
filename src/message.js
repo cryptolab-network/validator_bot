@@ -1,6 +1,8 @@
 const emoji = require('node-emoji');
 const keys = require('./config/keys');
 
+const COIN = (keys.chain === 'Kusama') ? 'KSM' : 'DOT';
+
 const MSG_START = () => {
   return emoji.emojify(`
 :trophy::trophy::trophy: This bot helps you to monitor the nomination status of your validators.
@@ -59,11 +61,11 @@ const MSG_NOMINATION_TREND = (validators) => {
   const prefix = 'Visit our website to get detailed information.\n';
   return prefix + validators.map((v) => {
     if (v.identity.display === '') {
-      return emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/validatorStatus?stash=${v.address}&coin=KSM">${v.address}</a>`);
+      return emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/validatorStatus?stash=${v.address}&coin=${COIN}">${v.address}</a>`);
     } else if (v.identity.displayParent === '') {
-      return emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/validatorStatus?stash=${v.address}&coin=KSM">${v.identity.display}</a>`);
+      return emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/validatorStatus?stash=${v.address}&coin=${COIN}">${v.identity.display}</a>`);
     } else {
-      return emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/validatorStatus?stash=${v.address}&coin=KSM">${v.identity.displayParent}/${v.identity.display}</a>`);
+      return emoji.emojify(`:sparkles: <a href="https://www.cryptolab.network/tools/validatorStatus?stash=${v.address}&coin=${COIN}">${v.identity.displayParent}/${v.identity.display}</a>`);
     }
   }).join("\n");
 }
@@ -127,12 +129,12 @@ const MSG_NOMINATION = (validator, oldCount, oldAmount, newCount, newAmount) => 
   if (newCount > oldCount){
     return emoji.emojify(`:tada: Your validator ${id} received nomination.
 Nominator count: ${newCount} (:arrow_up_small: ${newCount - oldCount})
-Total amount: ${newAmount} (:arrow_up_small: ${(newAmount - oldAmount).toFixed(2)}) KSM
+Total amount: ${newAmount} (:arrow_up_small: ${(newAmount - oldAmount).toFixed(2)}) ${COIN}
 `);
   } else {
     return emoji.emojify(`:broken_heart: Your validator ${id} lost nomination.
 Nominator count: ${newCount} (:small_red_triangle_down: ${oldCount - newCount})
-Total amount: ${newAmount} (:small_red_triangle_down: ${(oldAmount - newAmount).toFixed(2)}) KSM
+Total amount: ${newAmount} (:small_red_triangle_down: ${(oldAmount - newAmount).toFixed(2)}) ${COIN}
     `);
   }
 }
@@ -148,8 +150,8 @@ const MSG_STATUS_ACTIVE = (validator, era, total, own, commission) => {
   }
   return emoji.emojify(`
 :mahjong: Your validator ${id} is active in the era ${era}.
-Total active stake: ${total} KSM.
-Own active stake: ${own} KSM.
+Total active stake: ${total} ${COIN}.
+Own active stake: ${own} ${COIN}.
 Commission: ${commission}%
 `);
 }

@@ -4,7 +4,7 @@ const message = require('./message');
 const keys = require('./config/keys');
 
 module.exports = class Scheduler {
-  constructor(chaindata, db, notificator, telemetry, telemetryOfficial) {
+  constructor(role, chaindata, db, notificator, telemetry, telemetryOfficial) {
     this.db = db;
     this.chaindata = chaindata;
     this.notificator = notificator;
@@ -12,33 +12,77 @@ module.exports = class Scheduler {
     this.telemetryOfficial = telemetryOfficial;
     this.collecting = false;
     this.checking = false;
-    // request chaindata every 10 mins.
-    this.job_ = new CronJob('*/10 * * * *', async () => {
-      if (!this.collecting) {
-        this.collecting = true;
-        await Promise.all([
-          await this.updateValidators(),
-          await this.collectNominations()
-        ])
-        await this.updateClientStatus();
-        this.collecting = false;
+
+    switch(role) {
+      case 'bot': {
+        // check connection of nodes from telemetry server every 1 min.
+        this.botJob_ = new CronJob('*/1 * * * *', async () => {
+          if (!this.checking) {
+            this.checking = true;
+            await this.checkTelemetryStatus();
+            await this.checkNotification();
+            this.checking = false;
+          }
+        }, null, true, 'America/Los_Angeles', null, true);
       }
-    }, null, true, 'America/Los_Angeles', null, true);
-    // check connection of nodes from telemetry server every 1 min.
-    this.telemetryJob_ = new CronJob('*/1 * * * *', async () => {
-      if (!this.checking) {
-        this.checking = true;
-        await this.checkTelemetryStatus();
-        await this.checkNotification();
-        this.checking = false;
+      break;
+      case 'collector': {
+        // request chaindata every 10 mins.
+        this.collectorJob_ = new CronJob('*/10 * * * *', async () => {
+          if (!this.collecting) {
+            this.collecting = true;
+            await Promise.all([
+              await this.updateValidators(),
+              await this.collectNominations()
+            ])
+            await this.updateClientStatus();
+            this.collecting = false;
+          }
+        }, null, true, 'America/Los_Angeles', null, true);
       }
-    }, null, true, 'America/Los_Angeles', null, true);
+      break;
+      default: {
+        // check connection of nodes from telemetry server every 1 min.
+        this.botJob_ = new CronJob('*/1 * * * *', async () => {
+          if (!this.checking) {
+            this.checking = true;
+            await this.checkTelemetryStatus();
+            await this.checkNotification();
+            this.checking = false;
+          }
+        }, null, true, 'America/Los_Angeles', null, true);
+        // request chaindata every 10 mins.
+        this.collectorJob_ = new CronJob('*/10 * * * *', async () => {
+          if (!this.collecting) {
+            this.collecting = true;
+            await Promise.all([
+              await this.updateValidators(),
+              await this.collectNominations()
+            ])
+            await this.updateClientStatus();
+            this.collecting = false;
+          }
+        }, null, true, 'America/Los_Angeles', null, true);
+      }
+    }
   }
 
-  start() {
+  start(role) {
     console.log('start cronjob');
-    this.job_.start();
-    this.telemetryJob_.start();
+    switch(role) {
+      case 'bot': {
+        this.botJob_.start();
+      }
+      break;
+      case 'collector': {
+        this.collectorJob_.start();
+      }
+      break;
+      default: {
+        this.botJob_.start();
+        this.collectorJob_.start();
+      }
+    }
   }
 
   async updateValidators() {
@@ -212,14 +256,15 @@ module.exports = class Scheduler {
   }
 
   async checkNotification() {
-    console.time('scheduler :: checkTelemetryStatus');
+    console.time('scheduler :: checkNotification');
     const unsent = await this.db.getUnsentNotification();
     if (unsent !== null) {
       for (let n of unsent) {
         await this.notificator.send(n.chatId, n.message);
         await this.db.updateNotificationToSent(n._id);
+        console.log(`sent: ${n.message}`);
       }
     }
-    console.timeEnd('scheduler :: checkTelemetryStatus');
+    console.timeEnd('scheduler :: checkNotification');
   }
 }

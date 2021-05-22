@@ -14,7 +14,8 @@ module.exports = class DatabaseHandler {
     mongoose.connect(`mongodb://${name}:${pass}@${ip}:${port}/${dbName}`, {
       useNewUrlParser: true, 
       useUnifiedTopology: true,
-      poolSize: 10
+      poolSize: 10,
+      useFindAndModify: false
     });
     const db = mongoose.connection;
     db.on('error', console.error.bind(console, 'connection error:'));

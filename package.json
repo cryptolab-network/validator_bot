@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "bot": "node ./src/index.js -r bot",
+    "collector": "node ./src/index.js -r collector",
     "start": "node ./src/index.js",
     "dev": "nodemon ./src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,6 +17,7 @@
     "@polkadot/keyring": "^6.0.5",
     "@polkadot/util": "^6.0.5",
     "bignumber.js": "^9.0.1",
+    "commander": "^7.2.0",
     "cron": "^1.8.2",
     "mongoose": "^5.12.2",
     "node-emoji": "^1.10.0",
