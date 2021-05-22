@@ -104,14 +104,12 @@ program
   .option('-r, --role <role>', 'choose a role to execute this program, ex., bot or collector')
   .parse(process.argv)
 
-console.log(program.opts().role);
-
 
 if (program.opts().role === 'bot'){
-  console.log(`bot`);
+  console.log(`role: bot`);
   executeBot();
 } else if (program.opts().role === 'collector') {
-  console.log(`collector`);
+  console.log(`role: collector`);
   executeCollector();
 } else {
   main();

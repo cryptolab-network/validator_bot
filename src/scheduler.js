@@ -262,7 +262,8 @@ module.exports = class Scheduler {
       for (let n of unsent) {
         await this.notificator.send(n.chatId, n.message);
         await this.db.updateNotificationToSent(n._id);
-        console.log(`sent: ${n.message}`);
+        console.log(`sent:`);
+        console.log(`${n.message}`);
       }
     }
     console.timeEnd('scheduler :: checkNotification');

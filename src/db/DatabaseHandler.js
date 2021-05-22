@@ -8,8 +8,8 @@ module.exports = class DatabaseHandler {
 
   connect(name, pass, ip, port, dbName) {
     const self = this;
-    this.KsmBot = mongoose.model('KsmBot', this.ksmbotSchema_);
-    this.Validator = mongoose.model('Validator', this.validatorsSchema_);
+    this.Client = mongoose.model('bot_client', this.clientSchema_);
+    this.Validator = mongoose.model('bot_validator', this.validatorSchema_);
     this.Notification = mongoose.model('bot_notification', this.notificationSchema_);
     mongoose.connect(`mongodb://${name}:${pass}@${ip}:${port}/${dbName}`, {
       useNewUrlParser: true, 
@@ -25,7 +25,7 @@ module.exports = class DatabaseHandler {
   }
 
   __initSchema() {
-    this.ksmbotSchema_ = new Schema({
+    this.clientSchema_ = new Schema({
       validators:  [{
         address: String,
         nomination: {
@@ -69,11 +69,11 @@ module.exports = class DatabaseHandler {
       }
     }, { 
       typeKey: '$type',
-      collection: 'ksm_bot',
+      collection: 'bot_client',
       timestamps: {}
     });
 
-    this.validatorsSchema_ = new Schema({
+    this.validatorSchema_ = new Schema({
       stashId: String,
       controllerId: String,
       exposure: {
@@ -96,7 +96,7 @@ module.exports = class DatabaseHandler {
       active: Boolean
     }, {
       typeKey: '$type',
-      collection: 'bot_validators',
+      collection: 'bot_validator',
       timestamps: {}
     });
 
@@ -111,13 +111,13 @@ module.exports = class DatabaseHandler {
   }
 
   async updateClient(from, chat, address, identity) {
-    const user = await this.KsmBot.findOne({
+    const user = await this.Client.findOne({
       'tg_info.from.id': from.id,
       'tg_info.chat.id': chat.id
     }).exec();
 
     if (user === null) {
-      const result = await this.KsmBot.create({
+      const result = await this.Client.create({
         validators: [{
           address: address,
           nomination: {
@@ -139,7 +139,7 @@ module.exports = class DatabaseHandler {
       let result = user.validators.find((validator) => validator.address === address);
       if (result === undefined) {
         // insert address
-        result = await this.KsmBot.findOneAndUpdate({
+        result = await this.Client.findOneAndUpdate({
           'tg_info.from.id': from.id,
           'tg_info.chat.id': chat.id
         }, {
@@ -162,7 +162,7 @@ module.exports = class DatabaseHandler {
   }
 
   async removeClient(from, chat, address) {
-    const result = await this.KsmBot.findOneAndUpdate({
+    const result = await this.Client.findOneAndUpdate({
       'tg_info.from.id': from.id,
       'tg_info.chat.id': chat.id
     },{
@@ -177,7 +177,7 @@ module.exports = class DatabaseHandler {
   }
 
   async getClientValidators(from, chat) {
-    const result = await this.KsmBot.findOne({
+    const result = await this.Client.findOne({
       'tg_info.from.id': from.id,
       'tg_info.chat.id': chat.id
     }).exec();
@@ -188,12 +188,12 @@ module.exports = class DatabaseHandler {
   }
 
   async getAllClients() {
-    const result = await this.KsmBot.find();
+    const result = await this.Client.find();
     return result;
   }
 
   async updateNomination(_id, address, count, amount) {
-    const result = await this.KsmBot.updateOne({
+    const result = await this.Client.updateOne({
       '_id': _id,
       'validators.address': address
     }, {
@@ -202,7 +202,7 @@ module.exports = class DatabaseHandler {
   }
 
   async getClientValidator(from, chat, address) {
-    const result = await this.KsmBot.findOne({
+    const result = await this.Client.findOne({
       'tg_info.from.id': from.id,
       'tg_info.chat.id': chat.id
     }).exec();
@@ -219,7 +219,7 @@ module.exports = class DatabaseHandler {
   }
 
   async updateActive(_id, address, era, active) {
-    const result = await this.KsmBot.findOneAndUpdate({
+    const result = await this.Client.findOneAndUpdate({
       'validators._id': _id,
       'validators.address': address
     }, {
@@ -272,13 +272,13 @@ module.exports = class DatabaseHandler {
   }
 
   async updateTelemetry(from, chat, channel, telemetryNode) {
-    const user = await this.KsmBot.findOne({
+    const user = await this.Client.findOne({
       'tg_info.from.id': from.id,
       'tg_info.chat.id': chat.id
     }).exec();
 
     if (user === null) {
-      const result = await this.KsmBot.create({
+      const result = await this.Client.create({
         validators: [],
         telemetry: [{
           channel: channel,
@@ -299,7 +299,7 @@ module.exports = class DatabaseHandler {
       let result = user.telemetry.find((node) => node.id === telemetryNode.id);
       if (result === undefined) {
         // insert address
-        result = await this.KsmBot.findOneAndUpdate({
+        result = await this.Client.findOneAndUpdate({
           'tg_info.from.id': from.id,
           'tg_info.chat.id': chat.id
         }, {
@@ -321,7 +321,7 @@ module.exports = class DatabaseHandler {
   }
 
   async getTelemetryNodes(from, chat) {
-    const result = await this.KsmBot.findOne({
+    const result = await this.Client.findOne({
       'tg_info.from.id': from.id,
       'tg_info.chat.id': chat.id
     }).exec();
@@ -332,7 +332,7 @@ module.exports = class DatabaseHandler {
   }
 
   async removeTelemetry(from, chat, name) {
-    const result = await this.KsmBot.findOneAndUpdate({
+    const result = await this.Client.findOneAndUpdate({
       'tg_info.from.id': from.id,
       'tg_info.chat.id': chat.id
     },{
@@ -347,7 +347,7 @@ module.exports = class DatabaseHandler {
   }
 
   async getTelemetryNodesWithChatId() {
-    const result = await this.KsmBot.find();
+    const result = await this.Client.find();
     if (result === null) {
       return null;
     }
@@ -361,7 +361,7 @@ module.exports = class DatabaseHandler {
   }
 
   async updateTelemetryNode(_id, name, isOnline) {
-    const result = await this.KsmBot.updateOne({
+    const result = await this.Client.updateOne({
       '_id': _id,
       'telemetry.name': name
     }, {
