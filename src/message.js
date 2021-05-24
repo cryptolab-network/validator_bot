@@ -219,17 +219,14 @@ const MSG_TREND_NULL = () => {
 
 const MSG_NEW_RELEASE_NOTE = () => {
   return emoji.emojify(`
-  :gift::gift::gift: New feature released! :rocket::rocket::rocket:
+  :fire::fire::fire::fire::fire::fire::fire::fire::fire::fire::fire:  
+  Polkadot Announcements
 
-  The bot can monitor the online/offline status of your validator nodes on the following telemetry channels.
-  :one: https://telemetry.w3f.community/#list/${keys.CHAIN}
-  :two: https://telemetry.polkadot.io/#list/${keys.CHAIN}
-  Please note that the node name may be different from your validator identity.
+  Please downgrade all Polkadot Validators to the v0.8.30 client ASAP
+  This was the last Native client version and should help continues pushing blocks forward
+  also please add the flag --execution native
 
-  /telemetry name - :new: add a new node name to your telemetry watchlist
-  /telemetryList - :green_book: list added node name of the telemetry watchlist
-  /telemetryRemove name - :scissors: remove an existing node name of the telemetry watchlist
-
+  https://matrix.to/#/!UqHPWiCBGZWxrmYBkF:matrix.parity.io/$dNvl2AWcwgAGvdjorgIFrxVK4F4ZhYLZtAdSX7kQu9A?via=matrix.parity.io&via=matrix.org&via=web3.foundation
   `)
 }
 
