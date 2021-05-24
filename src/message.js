@@ -219,8 +219,7 @@ const MSG_TREND_NULL = () => {
 
 const MSG_NEW_RELEASE_NOTE = () => {
   return emoji.emojify(`
-  :fire::fire::fire::fire::fire::fire::fire::fire::fire::fire::fire:  
-  Polkadot Announcements
+  :fire::fire::fire: Polkadot Announcements :fire::fire::fire:
 
   Please downgrade all Polkadot Validators to the v0.8.30 client ASAP
   This was the last Native client version and should help continues pushing blocks forward
