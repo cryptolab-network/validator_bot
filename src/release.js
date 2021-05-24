@@ -1,7 +1,7 @@
 const message = require('./message');
 
 module.exports = class Release {
-	newReleaseNote = false;
+	newReleaseNote = yes;
 
 	constructor(db, notificator) {
 		this.db = db;
