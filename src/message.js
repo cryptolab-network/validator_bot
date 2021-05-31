@@ -1,7 +1,7 @@
 const emoji = require('node-emoji');
 const keys = require('./config/keys');
 
-const COIN = (keys.chain === 'Kusama') ? 'KSM' : 'DOT';
+const COIN = (keys.CHAIN === 'Kusama') ? 'KSM' : 'DOT';
 
 const MSG_START = () => {
   return emoji.emojify(`
