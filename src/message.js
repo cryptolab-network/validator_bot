@@ -169,7 +169,7 @@ Commission: ${commission}%
 Return: ${rank.stakedReturnCmp.toFixed(2)}%
 Rank: ${rank.rank}
 
-:smiling_imp: If commission was 0%, return would be ${rank.stakedReturn} and rank would be ${rank.newRank}.
+:smiling_imp: If commission was 0%, return would be ${rank.stakedReturn}% and rank would be ${rank.newRank}.
 ${(rank.newRank < 48) ? 'It\'s a significant opportunity to get more nominations. :rocket:' : ''}
 `);
   }
