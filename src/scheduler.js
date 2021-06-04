@@ -94,7 +94,7 @@ module.exports = class Scheduler {
     const allValidators = data.map((v) => {
       let validator = {};
       validator.stashId = v.stashId.toString();
-      validator.controllerId = v.controllerId.toString();
+      validator.controllerId = v.controllerId?.toString();
       validator.exposure = {
         total: v.exposure.total,
         own: v.exposure.own
