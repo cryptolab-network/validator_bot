@@ -139,7 +139,7 @@ Total amount: ${newAmount} (:small_red_triangle_down: ${(oldAmount - newAmount).
   }
 }
 
-const MSG_STATUS_ACTIVE = (validator, era, total, own, commission) => {
+const MSG_STATUS_ACTIVE = (validator, era, total, own, commission, rank) => {
   let id = '';
   if (validator.identity.display === '') {
     id = validator.address;
@@ -148,12 +148,33 @@ const MSG_STATUS_ACTIVE = (validator, era, total, own, commission) => {
   } else {
     id = ':white_check_mark: ' + validator.identity.displayParent + '/' + validator.identity.display;
   }
-  return emoji.emojify(`
+  
+  if (rank.commission === 0) {
+    return emoji.emojify(`
 :mahjong: Your validator ${id} is active in the era ${era}.
 Total active stake: ${total} ${COIN}.
 Own active stake: ${own} ${COIN}.
+Active nominators: ${rank.activeNominators}
 Commission: ${commission}%
+Return: ${rank.stakedReturnCmp.toFixed(2)}%
+rank: ${rank.rank}
 `);
+  } else {
+    return emoji.emojify(`
+:mahjong: Your validator ${id} is active in the era ${era}.
+Total active stake: ${total} ${COIN}.
+Own active stake: ${own} ${COIN}.
+Active nominators: ${rank.activeNominators}
+Commission: ${commission}%
+Return: ${rank.stakedReturnCmp.toFixed(2)}%
+Rank: ${rank.rank}
+
+:smiling_imp: If decrease commission to 0% :smiling_imp:
+Your :new: return will be ${rank.stakedReturn}%
+Your :new: rank will be ${rank.newRank}
+${(rank.newRank < 48) ? 'It\'s a significant opportunity to get more nominations. :rocket:' : ''}
+`);
+  }
 }
 
 const MSG_STATUS_INACTIVE = (validator, era) => {

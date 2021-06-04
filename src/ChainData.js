@@ -144,4 +144,49 @@ module.exports = class ChainData {
     }
   }
 
+  queryActiveEra = async () => {
+    console.time('chain :: queryActiveEra');
+    try {
+      const api = await this.handler.getApi();
+      const [activeEra] = await Promise.all([
+        api.query.staking.activeEra(),
+      ]);
+      console.timeEnd('chain :: queryActiveEra')
+      
+      return activeEra.unwrap().index.toNumber();
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
+  queryErasTotalStake = async (activeEra) => {
+    console.time('chain :: queryErasTotalStake');
+    try {
+      const api = await this.handler.getApi();
+      const [erasTotalStake] = await Promise.all([
+        api.query.staking.erasTotalStake(activeEra),
+      ]);
+      console.timeEnd('chain :: queryErasTotalStake');
+      return erasTotalStake;
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
+  queryTotalIssuance = async () => {
+    console.time('chain :: queryTotalIssuance');
+    try {
+      const api = await this.handler.getApi();
+      const [totalIssuance] = await Promise.all([
+        api.query.balances.totalIssuance(),
+      ]);
+      console.timeEnd('chain :: queryTotalIssuance')
+      return totalIssuance;
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
 }

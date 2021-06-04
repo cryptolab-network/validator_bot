@@ -2,6 +2,7 @@ const CronJob = require('cron').CronJob;
 const bn = require('bignumber.js');
 const message = require('./message');
 const keys = require('./config/keys');
+const { calcRank, calcNewRank } = require('./rank');
 
 module.exports = class Scheduler {
   constructor(role, chaindata, db, notificator, telemetry, telemetryOfficial) {
@@ -12,6 +13,7 @@ module.exports = class Scheduler {
     this.telemetryOfficial = telemetryOfficial;
     this.collecting = false;
     this.checking = false;
+    this.rank = null;
 
     switch(role) {
       case 'bot': {
@@ -88,6 +90,7 @@ module.exports = class Scheduler {
   async updateValidators() {
     console.time('scheduler :: updateValidators');
     const data = await this.chaindata.getAllValidators();
+    this.rank = await calcRank(this.chaindata, data);
     const allValidators = data.map((v) => {
       let validator = {};
       validator.stashId = v.stashId.toString();
@@ -199,10 +202,13 @@ module.exports = class Scheduler {
           if (clientValidator.era !== status.activeEra || clientValidator.active !== true) {
             // console.log(status.stakingInfo.validatorPrefs.commission);
             await this.db.updateActive(validator._id, validator.address, status.activeEra, true);
+            // fetch rank and calculate new rank if set commission to 0%
+            const rank = calcNewRank(validator.address, this.rank);
             const resp = message.MSG_STATUS_ACTIVE(validator, status.activeEra, 
               (status.stakingInfo.exposure.total.div(new bn(keys.CHAIN_DECIMAL))).toFixed(2).toString(), 
               (status.stakingInfo.exposure.own/keys.CHAIN_DECIMAL).toFixed(2), 
-              (status.stakingInfo.validatorPrefs.commission === 1) ? 0 : status.stakingInfo.validatorPrefs.commission/10000000
+              (status.stakingInfo.validatorPrefs.commission === 1) ? 0 : status.stakingInfo.validatorPrefs.commission/10000000,
+              rank
             );
             console.log(resp);
             await this.db.createNootification(client.tg_info.chat.id, resp);
