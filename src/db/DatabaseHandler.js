@@ -11,6 +11,7 @@ module.exports = class DatabaseHandler {
     this.Client = mongoose.model('bot_client', this.clientSchema_);
     this.Validator = mongoose.model('bot_validator', this.validatorSchema_);
     this.Notification = mongoose.model('bot_notification', this.notificationSchema_);
+    this.Command = mongoose.model('bot_command', this.commandSchema_);
     mongoose.connect(`mongodb://${name}:${pass}@${ip}:${port}/${dbName}`, {
       useNewUrlParser: true, 
       useUnifiedTopology: true,
@@ -108,6 +109,14 @@ module.exports = class DatabaseHandler {
       collection: 'bot_notification',
       timestamps: {}
     });
+
+    this.commandSchema_ = new Schema ({
+      tg_username: String,
+      command: String
+    }, {
+      collection: 'bot_command',
+      timestamps: {}
+    })
   }
 
   async updateClient(from, chat, address, identity) {
@@ -404,6 +413,17 @@ module.exports = class DatabaseHandler {
       })
     } catch (err) {
 
+    }
+  }
+
+  async storeCommand(tg_username, command) {
+    try {
+      await this.Command.create({
+        tg_username,
+        command,
+      });
+    } catch (err) {
+      console.log(err);
     }
   }
 }

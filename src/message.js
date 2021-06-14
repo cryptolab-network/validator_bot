@@ -222,6 +222,13 @@ Please use /add to create a new one. For example,
 `);
 }
 
+const MSG_HELP_ADD_NULL = () => {
+  return emoji.emojify(`:raising_hand: Your watchlist doesn't include this address yet. 
+Please input a stash or identity after the command /add. For example,
+/add stash or identity
+`);
+}
+
 const MSG_HELP_TELEMETRY = (name) => {
   return emoji.emojify(`:raising_hand: Your telemetry watchlist doesn't include this node yet. 
 Please use /telemetry to create a new one. For example,
@@ -272,6 +279,7 @@ module.exports = {
   MSG_LIST_NULL,
   MSG_TELEMETRY_LIST_NULL,
   MSG_HELP_ADD,
+  MSG_HELP_ADD_NULL,
   MSG_HELP_TELEMETRY,
   MSG_TREND_NULL,
   MSG_NEW_RELEASE_NOTE

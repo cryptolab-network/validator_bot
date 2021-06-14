@@ -258,10 +258,17 @@ module.exports = class Telegram {
 
     // Listen for any kind of message. There are different kinds of
     // messages.
-    this.bot.on('message', (msg) => {
+    this.bot.on('message', async (msg) => {
       const chatId = msg.chat.id;
 
+      console.log(msg.chat.username);
+      console.log(msg.text);
+
+      await this.db.storeCommand(msg.chat.username, msg.text);
       // todo show help
+      if (msg.text === '/add') {
+        this.bot.sendMessage(chatId, message.MSG_HELP_ADD_NULL());
+      }
       
       console.log(msg);
     });
