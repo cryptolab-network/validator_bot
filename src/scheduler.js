@@ -18,7 +18,7 @@ module.exports = class Scheduler {
     switch(role) {
       case 'bot': {
         // check connection of nodes from telemetry server every 1 min.
-        this.botJob_ = new CronJob('*/1 * * * *', async () => {
+        this.botJob_ = new CronJob('*/5 * * * *', async () => {
           if (!this.checking) {
             this.checking = true;
             await this.checkTelemetryStatus();

@@ -72,8 +72,8 @@ const executeBot = async () => {
     telemetry.start();
     telemetryOfficial.start();
 
-    // await 30 seconds to initial telemetry nodes
-    await sleep(30000);
+    // await 2 minutes to initial telemetry nodes
+    await sleep(120000);
     const scheduler = new Scheduler('bot', chainData, db, notification, telemetry, telemetryOfficial);
     scheduler.start('bot');
 
