@@ -16,22 +16,13 @@ module.exports = class Telegram {
     this.bot = new TelegramBot(token, {polling: true});
   }
 
-  async sendMessage(chatId, msg) {
-    try {
-      this.bot.sendMessage(chatId, msg);
-    } catch (e) {
-      console.log(e);
-    }
-    
-  }
-
   async start() {
     this.bot.onText(/\/start/, (msg, match) => {
-      this.sendMessage(msg.chat.id, message.MSG_START());
+      this.bot.sendMessage(msg.chat.id, message.MSG_START());
     })
 
     this.bot.onText(/\/help/, (msg, match) => {
-      this.sendMessage(msg.chat.id, message.MSG_HELP());
+      this.bot.sendMessage(msg.chat.id, message.MSG_HELP());
     })
 
     // Matches "/add [whatever]"
@@ -116,7 +107,7 @@ module.exports = class Telegram {
       }
 
       // send back
-      this.sendMessage(chatId, resp);
+      this.bot.sendMessage(chatId, resp);
     });
 
     this.bot.onText(/\/remove (.+)/, async (msg, match) => {
@@ -124,28 +115,28 @@ module.exports = class Telegram {
       const address = match[1];
 
       if (isValidAddress(address, this.chain) === false) {
-        this.sendMessage(chatId, message.MSG_INVALID_ADDR());
+        this.bot.sendMessage(chatId, message.MSG_INVALID_ADDR());
         return;
       } 
       // check if the address exists
       const allValidators = await this.db.getClientValidators(msg.from, msg.chat);
       if (allValidators === null) {
-        this.sendMessage(chatId, message.MSG_LIST_NULL());
+        this.bot.sendMessage(chatId, message.MSG_LIST_NULL());
         return;
       } 
 
       if (allValidators.find((validator) => validator.address === address) === undefined) {
-        this.sendMessage(chatId, message.MSG_HELP_ADD(address));
+        this.bot.sendMessage(chatId, message.MSG_HELP_ADD(address));
         return;
       }
 
       const result = await this.db.removeClient(msg.from, msg.chat, address);
       if (result === false) {
-        this.sendMessage(chatId, message.MSG_ERROR_UNKNOWN());
+        this.bot.sendMessage(chatId, message.MSG_ERROR_UNKNOWN());
         return;
       }
       
-      this.sendMessage(chatId, message.MSG_REMOVE(address));
+      this.bot.sendMessage(chatId, message.MSG_REMOVE(address));
     })
 
     this.bot.onText(/\/list/, async (msg, match) => {
@@ -156,7 +147,7 @@ module.exports = class Telegram {
       } else {
         resp = message.MSG_LIST(result);
       }
-      this.sendMessage(msg.chat.id, resp);
+      this.bot.sendMessage(msg.chat.id, resp);
     });
 
     this.bot.onText(/\/trend/, async (msg, match) => {
@@ -167,7 +158,7 @@ module.exports = class Telegram {
       } else {
         resp = message.MSG_NOMINATION_TREND(result);
       }
-      this.sendMessage(msg.chat.id, resp, {parse_mode : "HTML"});
+      this.bot.sendMessage(msg.chat.id, resp, {parse_mode : "HTML"});
     });
 
     this.bot.onText(/\/reward/, async (msg, match) => {
@@ -178,7 +169,7 @@ module.exports = class Telegram {
       } else {
         resp = message.MSG_REWARD_TREND(result);
       }
-      this.sendMessage(msg.chat.id, resp, {parse_mode : "HTML"});
+      this.bot.sendMessage(msg.chat.id, resp, {parse_mode : "HTML"});
     });
 
     this.bot.onText(/\/telemetry (.+)/, async (msg, match) => {
@@ -226,7 +217,7 @@ module.exports = class Telegram {
         // console.log(`found nothing`);
         resp = message.MSG_TELEMETRY_NOT_FOUND(name);
       }
-      this.sendMessage(msg.chat.id, resp);
+      this.bot.sendMessage(msg.chat.id, resp);
     });
 
     this.bot.onText(/\/telemetryList/, async (msg, match) => {
@@ -237,7 +228,7 @@ module.exports = class Telegram {
       } else {
         resp = message.MSG_TELEMETRY_LIST(result);
       }
-      this.sendMessage(msg.chat.id, resp);
+      this.bot.sendMessage(msg.chat.id, resp);
     });
 
     this.bot.onText(/\/telemetryRemove (.+)/, async (msg, match) => {
@@ -247,22 +238,22 @@ module.exports = class Telegram {
       // check if the address exists
       const allNodes = await this.db.getTelemetryNodes(msg.from, msg.chat);
       if (allNodes === null) {
-        this.sendMessage(chatId, message.MSG_TELEMETRY_LIST_NULL());
+        this.bot.sendMessage(chatId, message.MSG_TELEMETRY_LIST_NULL());
         return;
       } 
 
       if (allNodes.find((node) => node.name === name) === undefined) {
-        this.sendMessage(chatId, message.MSG_HELP_TELEMETRY(name));
+        this.bot.sendMessage(chatId, message.MSG_HELP_TELEMETRY(name));
         return;
       }
 
       const result = await this.db.removeTelemetry(msg.from, msg.chat, name);
       if (result === false) {
-        this.sendMessage(chatId, message.MSG_ERROR_UNKNOWN());
+        this.bot.sendMessage(chatId, message.MSG_ERROR_UNKNOWN());
         return;
       }
       
-      this.sendMessage(chatId, message.MSG_TELEMETRY_REMOVE(name));
+      this.bot.sendMessage(chatId, message.MSG_TELEMETRY_REMOVE(name));
     })
 
     // Listen for any kind of message. There are different kinds of
@@ -276,7 +267,7 @@ module.exports = class Telegram {
       await this.db.storeCommand(msg.chat.username, msg.text);
       // todo show help
       if (msg.text === '/add') {
-        this.sendMessage(chatId, message.MSG_HELP_ADD_NULL());
+        this.bot.sendMessage(chatId, message.MSG_HELP_ADD_NULL());
       }
       
       console.log(msg);
