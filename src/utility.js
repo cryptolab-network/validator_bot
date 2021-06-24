@@ -8,7 +8,7 @@ const isValidAddress = (address, chain) => {
         ? hexToU8a(address)
         : decodeAddress(address)
     );
-      // console.log(`address = ${address}`);
+
     if (chain === 'Kusama' && isKusamaAddress(address)) {
       return true;
     }
@@ -32,9 +32,10 @@ const isKusamaAddress = (address) => {
 }
 
 const isPolkadotAddress = (address) => {
-  if (address.length === 48 && address.match(/1+/)?.index === 0) {
+  if ((address.length === 48 || address.length === 47) && address.match(/1+/)?.index === 0) {
     return true;
   } else {
+    console.log(`false`);
     return false;
   }
 }
