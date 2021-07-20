@@ -159,7 +159,7 @@ Commission: ${commission}%
 Return: ${rank.stakedReturnCmp.toFixed(2)}%
 rank: ${rank.rank}
 `);
-  } else {
+  } else if (rank.commission <= 1) {
     return emoji.emojify(`
 :mahjong: Your validator ${id} is active in the era ${era}.
 Total active stake: ${total} ${COIN}.
@@ -172,8 +172,23 @@ Rank: ${rank.rank}
 :smiling_imp: If commission was 0%, return would be ${rank.stakedReturn}% and rank would be ${rank.newRank}.
 ${(rank.newRank < 48) ? 'It\'s a significant opportunity to get more nominations. :rocket:' : ''}
 `);
+  } else {
+    return emoji.emojify(`
+:mahjong: Your validator ${id} is active in the era ${era}.
+Total active stake: ${total} ${COIN}.
+Own active stake: ${own} ${COIN}.
+Active nominators: ${rank.activeNominators}
+Commission: ${commission}%
+Return: ${rank.stakedReturnCmp.toFixed(2)}%
+Rank: ${rank.rank}
+
+:smiling_imp: If commission was 0%, return would be ${rank.stakedReturn}% and rank would be ${rank.newRank}.
+:smiling_imp: If commission was 1%, return would be ${rank.stakedReturnCmpOne.toFixed(2)}% and rank would be ${rank.newRankOne}.
+${(rank.newRank < 48) ? 'It\'s a significant opportunity to get more nominations. :rocket:' : ''}
+`);
   }
 }
+
 
 const MSG_STATUS_INACTIVE = (validator, era) => {
   let id = '';
