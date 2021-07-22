@@ -149,7 +149,7 @@ const MSG_STATUS_ACTIVE = (validator, era, total, own, commission, rank) => {
     id = ':white_check_mark: ' + validator.identity.displayParent + '/' + validator.identity.display;
   }
   
-  if (rank.commission === 0) {
+  if (commission === 0) {
     return emoji.emojify(`
 :mahjong: Your validator ${id} is active in the era ${era}.
 Total active stake: ${total} ${COIN}.
@@ -159,7 +159,7 @@ Commission: ${commission}%
 Return: ${rank.stakedReturnCmp.toFixed(2)}%
 rank: ${rank.rank}
 `);
-  } else if (rank.commission <= 1) {
+  } else if (commission <= 1) {
     return emoji.emojify(`
 :mahjong: Your validator ${id} is active in the era ${era}.
 Total active stake: ${total} ${COIN}.
