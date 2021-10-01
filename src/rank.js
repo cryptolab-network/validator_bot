@@ -30,7 +30,7 @@ const _calcInflation = async (chainData) => {
   const totalStake = await chainData.queryErasTotalStake(activeEra);
   const totalIssuance = await chainData.queryTotalIssuance();
 
-  const numAuctions = (keys.CHAIN === 'Kusama') ? 5 : 0;
+  const numAuctions = (keys.CHAIN === 'Kusama') ? 10 : 0;
   const BN_MILLION = new BN('1000000', 10);
   const BN_ZERO = new BN('0', 10);
   const { auctionAdjust, auctionMax, falloff, maxInflation, minInflation, stakeTarget } = CHAIN_PARAMS[keys.CHAIN];
