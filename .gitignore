@@ -1,4 +1,3 @@
 node_modules/
-dev.js
+src/config/dev.js
 .vscode/
-package-lock.json
