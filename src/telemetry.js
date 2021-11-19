@@ -105,6 +105,8 @@ module.exports = class Telemetry {
       break;
       default: {
         // do nothing
+        // console.log(action);
+        // console.log(payload);
       }
     }
   }

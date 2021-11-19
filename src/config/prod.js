@@ -11,5 +11,6 @@ module.exports = {
   TELEMETRY_1KV: process.env.TELEMETRY_1KV,
   TELEMETRY_OFFICIAL: process.env.TELEMETRY_OFFICIAL,
   CHAIN: process.env.CHAIN,
-  CHAIN_DECIMAL: (typeof process.env.CHAIN_DECIMAL === 'number' ? process.env.CHAIN_DECIMAL : parseInt(process.env.CHAIN_DECIMAL))
+  CHAIN_DECIMAL: (typeof process.env.CHAIN_DECIMAL === 'number' ? process.env.CHAIN_DECIMAL : parseInt(process.env.CHAIN_DECIMAL)),
+  TELEMETRY_CHAIN_HASH: process.env.TELEMETRY_CHAIN_HASH
 }

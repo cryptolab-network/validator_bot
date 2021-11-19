@@ -23,8 +23,8 @@ const main = async () => {
     const handler = await ApiHandler.create(keys.API_WSS);
     const chainData = new ChainData(handler);
 
-    const telemetry = new Telemetry(keys.TELEMETRY_1KV, db, keys.CHAIN);
-    const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, db, keys.CHAIN);
+    const telemetry = new Telemetry(keys.TELEMETRY_1KV, db, keys.TELEMETRY_CHAIN_HASH);
+    const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, db, keys.TELEMETRY_CHAIN_HASH);
 
     const token = keys.TG_TOKEN;
     // Create a bot that uses 'polling' to fetch new updates
@@ -59,8 +59,8 @@ const executeBot = async () => {
     const handler = await ApiHandler.create(keys.API_WSS);
     const chainData = new ChainData(handler);
 
-    const telemetry = new Telemetry(keys.TELEMETRY_1KV, db, keys.CHAIN);
-    const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, db, keys.CHAIN);
+    const telemetry = new Telemetry(keys.TELEMETRY_1KV, db, keys.TELEMETRY_CHAIN_HASH);
+    const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, db, keys.TELEMETRY_CHAIN_HASH);
 
     const token = keys.TG_TOKEN;
     // Create a bot that uses 'polling' to fetch new updates
