@@ -30,7 +30,8 @@ module.exports = class Scheduler {
       break;
       case 'collector': {
         // request chaindata every 10 mins.
-        this.collectorJob_ = new CronJob('*/10 * * * *', async () => {
+        const freq = (keys.CHAIN === 'Kusama') ? '*/10 * * * *' : '*/30 * * * *';
+        this.collectorJob_ = new CronJob(freq, async () => {
           if (!this.collecting) {
             this.collecting = true;
             await Promise.all([
