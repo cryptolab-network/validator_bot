@@ -28,87 +28,92 @@ module.exports = class Telegram {
 
       // Matches "/add [whatever]"
       this.bot.onText(/\/add (.+)/, async (msg, match) => {
-        const chatId = msg.chat.id;
-        const input = match[1];
-        let resp = '';
+        try {
+          const chatId = msg.chat.id;
+          const input = match[1];
+          let resp = '';
 
-        // check input type: address or identity
-        if (isValidAddress(input, this.chain)) {
-          // input is an address
-          const res = await this.chainData.getIdentity(input);
-          const identity = {
-            display: res.identity.display === undefined ? '' : res.identity.display,
-            displayParent: res.identity.displayParent === undefined ? '' : res.identity.displayParent
-          }
+          // check input type: address or identity
+          if (isValidAddress(input, this.chain)) {
+            // input is an address
+            const res = await this.chainData.getIdentity(input);
+            const identity = {
+              display: res.identity.display === undefined ? '' : res.identity.display,
+              displayParent: res.identity.displayParent === undefined ? '' : res.identity.displayParent
+            }
 
-          await this._waitUntilFree();
-          mutexUpdateDb = true;
-          const result = await this.db.updateClient(msg.from, msg.chat, input, identity);
-          mutexUpdateDb = false;
+            await this._waitUntilFree();
+            mutexUpdateDb = true;
+            const result = await this.db.updateClient(msg.from, msg.chat, input, identity);
+            mutexUpdateDb = false;
 
-          if (result === false) {
-            resp = message.MSG_ERROR_UNKNOWN();
-          } else {
-            resp = message.MSG_ADD(input, identity);
-          }
-        } else {
-          // check if input is an identity
-          const ids = input.split('/');
-          if (ids.length === 1) {
-            let result = await this.db.findIdentity(ids[0]);
-            if (result.length === 0) {
-              resp = message.MSG_INVALID_ID_NOT_FOUND();
-            } else if (result.length > 1) {
-              resp = message.MSG_INVALID_ID();
+            if (result === false) {
+              resp = message.MSG_ERROR_UNKNOWN();
             } else {
-              // found identity
-              const address = result[0].stashId;
-              const identity = {
-                display: result[0].identity.display,
-                displayParent: result[0].identity.displayParent === undefined ? '' : result[0].identity.displayParent
-              }
-
-              await this._waitUntilFree();
-              mutexUpdateDb = true;
-              result = await this.db.updateClient(msg.from, msg.chat, address, identity);
-              mutexUpdateDb = false;
-
-              if (result === false) {
-                resp = message.MSG_ERROR_UNKNOWN();
-              } else {
-                resp = message.MSG_ADD(address, identity);
-              }
+              resp = message.MSG_ADD(input, identity);
             }
           } else {
-            let result = await this.db.findIdentityParent(ids[0], ids[1]);
-            if (result.length === 0) {
-              resp = message.MSG_INVALID_ID_NOT_FOUND();
-            } else if (result.length > 1) {
-              resp = message.MSG_INVALID_ID();
-            } else {
-              // found identity
-              const address = result[0].stashId;
-              const identity = {
-                display: result[0].identity.display,
-                displayParent: result[0].identity.displayParent === undefined ? '' : result[0].identity.displayParent
-              }
-
-              await this._waitUntilFree();
-              mutexUpdateDb = true;
-              result = await this.db.updateClient(msg.from, msg.chat, address, identity);
-              mutexUpdateDb = false;
-
-              if (result === false) {
-                resp = message.MSG_ERROR_UNKNOWN();
+            // check if input is an identity
+            const ids = input.split('/');
+            if (ids.length === 1) {
+              let result = await this.db.findIdentity(ids[0]);
+              if (result.length === 0) {
+                resp = message.MSG_INVALID_ID_NOT_FOUND();
+              } else if (result.length > 1) {
+                resp = message.MSG_INVALID_ID();
               } else {
-                resp = message.MSG_ADD(address, identity);
+                // found identity
+                const address = result[0].stashId;
+                const identity = {
+                  display: result[0].identity.display,
+                  displayParent: result[0].identity.displayParent === undefined ? '' : result[0].identity.displayParent
+                }
+
+                await this._waitUntilFree();
+                mutexUpdateDb = true;
+                result = await this.db.updateClient(msg.from, msg.chat, address, identity);
+                mutexUpdateDb = false;
+
+                if (result === false) {
+                  resp = message.MSG_ERROR_UNKNOWN();
+                } else {
+                  resp = message.MSG_ADD(address, identity);
+                }
+              }
+            } else {
+              let result = await this.db.findIdentityParent(ids[0], ids[1]);
+              if (result.length === 0) {
+                resp = message.MSG_INVALID_ID_NOT_FOUND();
+              } else if (result.length > 1) {
+                resp = message.MSG_INVALID_ID();
+              } else {
+                // found identity
+                const address = result[0].stashId;
+                const identity = {
+                  display: result[0].identity.display,
+                  displayParent: result[0].identity.displayParent === undefined ? '' : result[0].identity.displayParent
+                }
+
+                await this._waitUntilFree();
+                mutexUpdateDb = true;
+                result = await this.db.updateClient(msg.from, msg.chat, address, identity);
+                mutexUpdateDb = false;
+
+                if (result === false) {
+                  resp = message.MSG_ERROR_UNKNOWN();
+                } else {
+                  resp = message.MSG_ADD(address, identity);
+                }
               }
             }
           }
+
+          // send back
+          this.bot.sendMessage(chatId, resp);
+        } catch (e) {
+          console.log(e);
+          this.bot.sendMessage(chatId, "Something went wrong. Try again later.");
         }
-
-        // send back
-        this.bot.sendMessage(chatId, resp);
       });
 
       this.bot.onText(/\/remove (.+)/, async (msg, match) => {
