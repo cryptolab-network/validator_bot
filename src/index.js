@@ -33,8 +33,8 @@ const main = async () => {
     
     telegram.start();
 
-    telemetry.start();
-    telemetryOfficial.start();
+    telemetry.start().catch(e => console.log(e));
+    telemetryOfficial.start().catch(e => console.log(e));
 
     // await 30 seconds to initial telemetry nodes
     await sleep(30000);
@@ -63,16 +63,16 @@ const executeBot = async () => {
     const telemetryOfficial = new Telemetry(keys.TELEMETRY_OFFICIAL, db, keys.TELEMETRY_CHAIN_HASH);
 
     const token = keys.TG_TOKEN;
-    // Create a bot that uses 'polling' to fetch new updates
+    // // Create a bot that uses 'polling' to fetch new updates
     const telegram = new Telegram(token, db, chainData, keys.CHAIN, telemetry, keys.TELEMETRY_1KV, telemetryOfficial, keys.TELEMETRY_OFFICIAL);
     const notification = new Notification(telegram.bot);
     
     telegram.start();
 
-    telemetry.start();
-    telemetryOfficial.start();
+    telemetry.start().catch(e => console.log(e));
+    telemetryOfficial.start().catch(e => console.log(e));
 
-    // await 2 minutes to initial telemetry nodes
+    // // await 2 minutes to initial telemetry nodes
     await sleep(120000);
     const scheduler = new Scheduler('bot', chainData, db, notification, telemetry, telemetryOfficial);
     scheduler.start('bot');

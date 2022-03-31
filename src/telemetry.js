@@ -39,7 +39,14 @@ module.exports = class Telemetry {
     this.url = url;
     this.db = db;
     this.chain = chain;
-    this.connection = new ReconnectingWebSocket(this.url, null, {WebSocket: WS});
+
+    const options = {
+      WebSocket: WS,
+      connectionTimeout: 1000,
+      maxRetries: 10,
+    }
+
+    this.connection = new ReconnectingWebSocket(this.url, [], options);
   }
 
   async start() {
@@ -60,7 +67,7 @@ module.exports = class Telemetry {
         console.log(err.toString());
         reject();
       };
-
+      
       this.connection.onmessage = (msg) => {
         const messages = this._deserialize(msg);
         for (const message of messages) {
