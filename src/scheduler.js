@@ -223,41 +223,45 @@ module.exports = class Scheduler {
 
   async checkTelemetryStatus() {
     console.time('scheduler :: checkTelemetryStatus');
-    const telemetryNodes = Object.keys(this.telemetry.nodes).map((key) => this.telemetry.nodes[key]);
-    const telemetryOfficialNodes = Object.keys(this.telemetryOfficial.nodes).map((key) => this.telemetryOfficial.nodes[key]);
-    const allNodes = await this.db.getTelemetryNodesWithChatId();
-    for (const v of allNodes) {
-      for (const node of v.telemetry) {
-        let isOnline = false;
-        if (node.channel === keys.TELEMETRY_1KV) {
-          for (const n of telemetryNodes) {
-            if (n.name === node.name) {
-              isOnline = true;
-              break;
+    try {
+      const telemetryNodes = Object.keys(this.telemetry.nodes).map((key) => this.telemetry.nodes[key]);
+      const telemetryOfficialNodes = Object.keys(this.telemetryOfficial.nodes).map((key) => this.telemetryOfficial.nodes[key]);
+      const allNodes = await this.db.getTelemetryNodesWithChatId();
+      for (const v of allNodes) {
+        for (const node of v.telemetry) {
+          let isOnline = false;
+          if (node.channel === keys.TELEMETRY_1KV) {
+            for (const n of telemetryNodes) {
+              if (n.name === node.name) {
+                isOnline = true;
+                break;
+              }
             }
           }
-        }
-        if (node.channel === keys.TELEMETRY_OFFICIAL) {
-          for (const n of telemetryOfficialNodes) {
-            if (n.name === node.name) {
-              isOnline = true;
-              break;
+          if (node.channel === keys.TELEMETRY_OFFICIAL) {
+            for (const n of telemetryOfficialNodes) {
+              if (n.name === node.name) {
+                isOnline = true;
+                break;
+              }
             }
           }
-        }
-        if (isOnline !== node.isOnline) {
-          // update status and send notification
-          let resp = '';
-          if (isOnline === true) {
-            resp = message.MSG_TELEMETRY_NODE_ONLINE(node.name);
-          } else {
-            resp = message.MSG_TELEMETRY_NODE_OFFLINE(node.name);
+          if (isOnline !== node.isOnline) {
+            // update status and send notification
+            let resp = '';
+            if (isOnline === true) {
+              resp = message.MSG_TELEMETRY_NODE_ONLINE(node.name);
+            } else {
+              resp = message.MSG_TELEMETRY_NODE_OFFLINE(node.name);
+            }
+            console.log(resp);
+            await this.notificator.send(v.chatId, resp);
+            await this.db.updateTelemetryNode(v._id, node.name, isOnline);
           }
-          console.log(resp);
-          await this.notificator.send(v.chatId, resp);
-          await this.db.updateTelemetryNode(v._id, node.name, isOnline);
         }
       }
+    } catch (err) {
+      console.log(err);
     }
     console.timeEnd('scheduler :: checkTelemetryStatus');
   }
